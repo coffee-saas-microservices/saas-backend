@@ -26,10 +26,12 @@ spring:
         jwt:
           issuer-uri: ${ISSUER_URI}
 
-idp:
-  url: ${IDP_URL}
+keycloak:
+  auth-server-url: ${IDP_URL}
+  realm: ${REALM}
   client-id: ${CLIENT_ID}
-  client-secret: ${CLIENT_SECRET}
+  admin-client-id: ${ADMIN_CLIENT_ID}
+  admin-client-secret: ${ADMIN_CLIENT_SECRET}
 
 eureka:
   instance:
