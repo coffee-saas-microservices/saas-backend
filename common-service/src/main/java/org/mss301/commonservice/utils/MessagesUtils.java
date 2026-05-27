@@ -1,5 +1,6 @@
-package org.mss301.commonservice.util;
+package org.mss301.commonservice.utils;
 
+import lombok.NoArgsConstructor;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -8,12 +9,10 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-public class MessageUtils {
+@NoArgsConstructor
+public class MessagesUtils {
     private static final String BUNDLE_BASENAME = "messages.messages";
     private static final Locale DEFAULT_LOCALE = Locale.forLanguageTag("vi");
-
-    private MessagesUtils() {
-    }
 
     public static String getMessage(String errorCode, Object... var2) {
         ResourceBundle messageBundle = ResourceBundle.getBundle(BUNDLE_BASENAME, resolveLocale());
