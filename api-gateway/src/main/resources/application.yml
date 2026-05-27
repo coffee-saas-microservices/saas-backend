@@ -1,0 +1,40 @@
+server:
+  port: ${PORT}
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+      routes:
+        - id: identity-service-route
+          uri: lb://identity-service
+          predicates:
+            - Path=/api/customers/**, api/auth/**, /v3/api-docs/identity
+
+        - id: shop-service-route
+          uri: lb://shop-service
+          predicates:
+            - Path=/api/shops/**, /api/internal/shops/**, /v3/api-docs/shop
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      default-zone: ${EUREKA_SERVER_URL}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: 1. Identity Service
+        url: /v3/api-docs/identity
+      - name: 2. Shop Service
+        url: /v3/api-docs/shop
