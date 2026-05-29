@@ -5,6 +5,9 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
+import io.swagger.v3.oas.models.servers.Server;
+import java.util.List;
+
 public class CommonSwaggerConfig {
 
         public static final String SECURITY_SCHEME_NAME = "bearerAuth";
@@ -19,6 +22,7 @@ public class CommonSwaggerConfig {
                 SecurityRequirement globalSecurityRequirement = new SecurityRequirement().addList(SECURITY_SCHEME_NAME);
 
                 return openAPI
+                                .servers(List.of(new Server().url("/")))
                                 .components(new Components()
                                                 .addSecuritySchemes(SECURITY_SCHEME_NAME, bearerScheme))
                                 .addSecurityItem(globalSecurityRequirement);

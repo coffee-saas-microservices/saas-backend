@@ -50,9 +50,6 @@ public class Customer {
     @Column(name = "total_point")
     private Double totalPoint;
 
-    @Column(name = "refresh_token")
-    private String refreshToken;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 

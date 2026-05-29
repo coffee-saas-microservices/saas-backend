@@ -22,7 +22,7 @@ public class KeyCloakClientProperties {
     }
 
     public String adminTokenEndpoint() {
-        return authServerUrl + "/realms/" + realm + "/protocol/openid-connect/token";
+        return authServerUrl + "/realms/" + adminRealm + "/protocol/openid-connect/token";
     }
 
     public String logoutEndpoint() {

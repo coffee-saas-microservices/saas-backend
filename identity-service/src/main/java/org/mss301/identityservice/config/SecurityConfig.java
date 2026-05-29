@@ -29,6 +29,7 @@ public class SecurityConfig {
 
         private static final String[] PUBLIC_ENDPOINTS = {
                         "/api/customers/register",
+                        "/api/customers/login",
         };
 
         @Bean
