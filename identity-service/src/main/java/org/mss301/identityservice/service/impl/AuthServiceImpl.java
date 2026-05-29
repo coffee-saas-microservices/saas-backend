@@ -4,9 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mss301.commonservice.exception.BusinessException;
 import org.mss301.commonservice.keycloak.KeyCloakAuthClient;
+import org.mss301.commonservice.keycloak.KeyCloakTokenResponse;
 import org.mss301.commonservice.multitenancy.TenantContext;
 import org.mss301.identityservice.dto.request.CustomerRegistrationRequest;
+import org.mss301.identityservice.dto.request.LoginRequest;
+import org.mss301.identityservice.dto.request.LogoutRequest;
 import org.mss301.identityservice.dto.response.CustomerResponse;
+import org.mss301.identityservice.dto.response.LoginResponse;
 import org.mss301.identityservice.entity.Customer;
 import org.mss301.identityservice.entity.enumeration.CustomerStatus;
 import org.mss301.identityservice.mapper.CustomerMapper;
@@ -69,6 +73,52 @@ public class AuthServiceImpl implements AuthService {
             rollbackKeycloakUser(keycloakUserId);
             throw ex;
         }
+    }
+
+    @Override
+    public LoginResponse login(LoginRequest request) {
+        if (request.getUsername() == null || request.getPassword() == null) {
+            throw new BusinessException("Thiếu thông tin đăng nhập");
+        }
+
+        Long currentShopId = TenantContext.getCurrentShopId();
+        if (currentShopId == null) {
+            throw new BusinessException("Cửa hàng không tồn tại");
+        }
+
+        Customer customer = customerRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác"));
+
+        if (!passwordEncoder.matches(request.getPassword(), customer.getPassword())) {
+            throw new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác");
+        }
+
+        if (customer.getShopId() == null || !customer.getShopId().equals(currentShopId)) {
+            throw new BusinessException("Tài khoản không thuộc cửa hàng này");
+        }
+
+        if (customer.getStatus() != CustomerStatus.ACTIVE) {
+            throw new BusinessException("Tài khoản của bạn đã bị khóa hoặc ngừng hoạt động");
+        }
+
+        return generateLoginResponse(request);
+    }
+
+    @Override
+    public void logout(LogoutRequest request) {
+        keyCloakAuthClient.logout(request.getRefreshToken());
+    }
+
+    private LoginResponse generateLoginResponse(LoginRequest request) {
+        KeyCloakTokenResponse tokenResponse = keyCloakAuthClient.login(request.getUsername(), request.getPassword());
+
+        return LoginResponse.builder()
+                .accessToken(tokenResponse.getAccessToken())
+                .refreshToken(tokenResponse.getRefreshToken())
+                .tokenType(tokenResponse.getTokenType())
+                .expiresIn(tokenResponse.getExpiresIn())
+                .refreshExpiresIn(tokenResponse.getRefreshExpiresIn())
+                .build();
     }
 
     private void validateUniqueness(CustomerRegistrationRequest request) {
