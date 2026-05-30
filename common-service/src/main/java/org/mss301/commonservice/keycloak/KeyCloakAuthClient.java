@@ -23,6 +23,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class KeyCloakAuthClient {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -35,13 +36,6 @@ public class KeyCloakAuthClient {
         form.add("username", username);
         form.add("password", password);
         form.add("grant_type", "password");
-        return postToken(form);
-    }
-
-    public KeyCloakTokenResponse refreshToken(String refreshToken) {
-        MultiValueMap<String, String> form = baseClientForm();
-        form.add("grant_type", "refresh_token");
-        form.add("refresh_token", refreshToken);
         return postToken(form);
     }
 
@@ -128,6 +122,97 @@ public class KeyCloakAuthClient {
                 .header("Authorization", "Bearer " + adminToken)
                 .retrieve()
                 .toBodilessEntity());
+    }
+
+    public KeyCloakTokenResponse loginAdmin() {
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("grant_type", "client_credentials");
+        formData.add("client_id", properties.getAdminClientId());
+        formData.add("client_secret", properties.getAdminClientSecret());
+
+        return restClientBuilder.build().post()
+                .uri(properties.adminTokenEndpoint())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(formData)
+                .retrieve()
+                .body(KeyCloakTokenResponse.class);
+    }
+
+    public String createUserWithAttributes(
+            String username, String email, String fullName, String phone,
+            String password, List<String> realmRoles, Map<String, List<String>> attributes
+    ) {
+        String adminToken = getAdminToken();
+        Map<String, Object> userFields = new HashMap<>();
+        userFields.put("username", username);
+        userFields.put("email", email);
+        userFields.put("enabled", true);
+
+        // Build attributes map (fullname, phone, and any extra attributes)
+        Map<String, List<String>> allAttributes = new HashMap<>();
+        if (attributes != null) {
+            allAttributes.putAll(attributes);
+        }
+        if (fullName != null && !fullName.isBlank()) {
+            allAttributes.put("fullname", List.of(fullName));
+        }
+        if (phone != null && !phone.isBlank()) {
+            allAttributes.put("phone", List.of(phone));
+        }
+        if (!allAttributes.isEmpty()) {
+            userFields.put("attributes", allAttributes);
+        }
+
+        userFields.put("credentials", List.of(Map.of(
+                "type", "password",
+                "value", password,
+                "temporary", false
+        )));
+
+        URI location = execute(() -> restClientBuilder.build().post()
+                .uri(properties.adminUsersEndpoint())
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(userFields)
+                .retrieve()
+                .toBodilessEntity())
+                .getHeaders()
+                .getLocation();
+
+        if (location == null) {
+            throw new BusinessException("keycloak.create.user.failed");
+        }
+
+        String keycloakUserId = extractUserIdFromLocation(location.toString());
+        assignRealmRoles(adminToken, keycloakUserId, realmRoles);
+        log.info("Đã tạo xong tài khoản Keycloak cho user: {} (id: {})", username, keycloakUserId);
+        return keycloakUserId;
+    }
+
+    private String getAdminToken() {
+        try {
+            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+            formData.add("grant_type", "client_credentials");
+            formData.add("client_id", properties.getAdminClientId());
+            formData.add("client_secret", properties.getAdminClientSecret());
+
+            log.debug("Admin token endpoint: {}", properties.adminTokenEndpoint());
+            KeyCloakTokenResponse response = restClientBuilder.build().post()
+                    .uri(properties.adminTokenEndpoint())
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(formData)
+                    .retrieve()
+                    .body(KeyCloakTokenResponse.class);
+            if (response == null || response.getAccessToken() == null) {
+                throw new BusinessException("KEYCLOAK_TOKEN_EMPTY");
+            }
+            return response.getAccessToken();
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to get admin token from Keycloak: {}", e.getMessage(), e);
+            throw new BusinessException("KEYCLOAK_ADMIN_AUTH_FAILED");
+        }
     }
 
     private String fetchAdminAccessToken() {
