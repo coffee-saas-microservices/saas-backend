@@ -1,6 +1,6 @@
 package org.mss301.identityservice.entity.enumeration;
 
-public enum CustomerStatus {
+public enum UserStatus {
     ACTIVE,
     INACTIVE,
     BANNED,

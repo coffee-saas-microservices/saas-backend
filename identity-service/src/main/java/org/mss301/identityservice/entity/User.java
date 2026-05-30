@@ -2,39 +2,32 @@ package org.mss301.identityservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.mss301.identityservice.entity.enumeration.CustomerStatus;
+import org.mss301.identityservice.entity.enumeration.UserStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "customers")
+@Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class Customer {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(name = "username")
     private String username;
-
-    @Column(name = "fullname")
     private String fullname;
-
-    @Column(name = "password")
     private String password;
 
-    @Column(name = "email", unique = true)
+    @Column(unique = true)
     private String email;
 
-    @Column(name = "phone", unique = true)
+    @Column(unique = true)
     private String phone;
-
-    @Column(name = "address")
     private String address;
 
     @Column(name = "date_of_birth")
@@ -42,25 +35,22 @@ public class Customer {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private CustomerStatus status;
+    private UserStatus status;
 
     @Column(name = "keycloak_user_id", nullable = false, unique = true, length = 100)
     private String keycloakUserId;
 
-    @Column(name = "total_point")
+    @Column(name = "total_point", nullable = true)
     private Double totalPoint;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
 
     @Column(name = "shop_id", nullable = false)
     private Long shopId;
 
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rank_id")
+    @JoinColumn(name = "rank_id", nullable = true)
     private MembershipRank membershipRank;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
 }
