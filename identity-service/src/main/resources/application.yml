@@ -30,6 +30,7 @@ spring:
 keycloak:
   auth-server-url: ${IDP_URL}
   realm: ${REALM}
+  admin-realm: ${ADMIN_REALM:${REALM}}
   client-id: ${CLIENT_ID}
   client-secret: ${CLIENT_SECRET}
   admin-client-id: ${ADMIN_CLIENT_ID}

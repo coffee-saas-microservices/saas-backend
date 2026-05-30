@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.mss301.identityservice.dto.request.CustomerRegistrationRequest;
 import org.mss301.identityservice.dto.request.LoginRequest;
 import org.mss301.identityservice.dto.request.LogoutRequest;
+import org.mss301.identityservice.dto.request.ShopAccountRequest;
 import org.mss301.identityservice.dto.response.CustomerResponse;
 import org.mss301.identityservice.dto.response.LoginResponse;
 import org.mss301.identityservice.service.AuthService;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -46,6 +48,17 @@ public class CustomerController {
         authService.logout(request);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Đăng xuất thành công");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/internal/register-shop-account")
+    public ResponseEntity<Map<String, String>> registerShopAccount(
+            @Valid @RequestBody ShopAccountRequest request
+    ) {
+        authService.registerShopAccount(request);
+        Map<String, String> response = new HashMap<>();
+        response.put("status", "SUCCESS");
+        response.put("message", "Cấp tài khoản thành công");
         return ResponseEntity.ok(response);
     }
 }
