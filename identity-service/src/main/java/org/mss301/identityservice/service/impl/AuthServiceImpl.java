@@ -12,13 +12,11 @@ import org.mss301.identityservice.dto.request.LogoutRequest;
 import org.mss301.identityservice.dto.request.ShopAccountRequest;
 import org.mss301.identityservice.dto.response.CustomerResponse;
 import org.mss301.identityservice.dto.response.LoginResponse;
-import org.mss301.identityservice.entity.Customer;
-import org.mss301.identityservice.entity.UserProfile;
-import org.mss301.identityservice.entity.enumeration.CustomerStatus;
-import org.mss301.identityservice.mapper.CustomerMapper;
-import org.mss301.identityservice.repository.CustomerRepository;
+import org.mss301.identityservice.entity.User;
+import org.mss301.identityservice.entity.enumeration.UserStatus;
+import org.mss301.identityservice.mapper.UserMapper;
+import org.mss301.identityservice.repository.UserRepository;
 import org.mss301.identityservice.repository.MembershipRankRepository;
-import org.mss301.identityservice.repository.UserProfileRepository;
 import org.mss301.identityservice.service.AuthService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,12 +35,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-    private final CustomerRepository customerRepository;
+    private final UserRepository userRepository;
     private final KeyCloakAuthClient keyCloakAuthClient;
-    private final CustomerMapper customerMapper;
+    private final UserMapper userMapper;
     private final MembershipRankRepository membershipRankRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UserProfileRepository userProfileRepository;
 
     @Override
     @Transactional
@@ -69,15 +66,15 @@ public class AuthServiceImpl implements AuthService {
                 List.of("CUSTOMER"));
 
         try {
-            Customer customer = buildCustomer(request, shopId, keycloakUserId);
-            customer = customerRepository.save(customer);
+            User user = buildCustomer(request, shopId, keycloakUserId);
+            user = userRepository.save(user);
 
-            customer.setMembershipRank(membershipRankRepository
+            user.setMembershipRank(membershipRankRepository
                     .findFirstByShopIdOrderByRequiredPointsAsc(shopId)
                     .orElseThrow(() -> new BusinessException("Lỗi cấu hình hạng thành viên!")));
-            customer = customerRepository.save(customer);
+            user = userRepository.save(user);
 
-            return customerMapper.toResponse(customer);
+            return userMapper.toResponse(user);
         } catch (Exception ex) {
             rollbackKeycloakUser(keycloakUserId);
             throw ex;
@@ -113,22 +110,26 @@ public class AuthServiceImpl implements AuthService {
         List<String> roles = realmAccess != null ? (List<String>) realmAccess.get("roles") : List.of();
 
         if (roles.contains("CUSTOMER")) {
-            Customer customer = customerRepository.findByKeycloakUserId(keycloakUserId)
+            User user = userRepository.findByKeycloakUserId(keycloakUserId)
                     .orElseThrow(() -> new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác"));
 
-            if (customer.getShopId() == null || !customer.getShopId().equals(currentShopId)) {
+            if (user.getShopId() == null || !user.getShopId().equals(currentShopId)) {
                 throw new BusinessException("Tài khoản không thuộc cửa hàng này");
             }
 
-            if (customer.getStatus() != CustomerStatus.ACTIVE) {
+            if (user.getStatus() != UserStatus.ACTIVE) {
                 throw new BusinessException("Tài khoản của bạn đã bị khóa hoặc ngừng hoạt động");
             }
         } else if (roles.contains("SHOP_ADMIN")) {
-            UserProfile userProfile = userProfileRepository.findByKeycloakUserId(keycloakUserId)
+            User user = userRepository.findByKeycloakUserId(keycloakUserId)
                     .orElseThrow(() -> new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác"));
 
-            if (userProfile.getShopId() == null || !userProfile.getShopId().equals(currentShopId)) {
+            if (user.getShopId() == null || !user.getShopId().equals(currentShopId)) {
                 throw new BusinessException("Tài khoản không thuộc cửa hàng này");
+            }
+
+            if (user.getStatus() != UserStatus.ACTIVE) {
+                throw new BusinessException("Tài khoản admin của bạn đã bị khóa hoặc ngừng hoạt động");
             }
         } else {
             throw new BusinessException("Tài khoản không có quyền truy cập cửa hàng này");
@@ -165,20 +166,20 @@ public class AuthServiceImpl implements AuthService {
         );
 
         try {
-            UserProfile userProfile = new UserProfile();
-            userProfile.setUsername(request.getUsername());
-            userProfile.setEmail(request.getEmail());
-            userProfile.setFullname(request.getFullName());
-            userProfile.setPhone(request.getPhone());
-            userProfile.setShopId(request.getShopId());
-            userProfile.setKeycloakUserId(keycloakUserId);
-            userProfileRepository.save(userProfile);
-            log.info("Đã tạo shop account trong DB (user_profiles) cho user: {}", request.getUsername());
+            User shopAdmin = new User();
+            shopAdmin.setUsername(request.getUsername());
+            shopAdmin.setEmail(request.getEmail());
+            shopAdmin.setFullname(request.getFullName());
+            shopAdmin.setPhone(request.getPhone());
+            shopAdmin.setShopId(request.getShopId());
+            shopAdmin.setKeycloakUserId(keycloakUserId);
+            shopAdmin.setStatus(UserStatus.ACTIVE);
+            shopAdmin.setPassword(passwordEncoder.encode(request.getPassword()));
+            userRepository.save(shopAdmin);
         } catch (Exception ex) {
             // Rollback Keycloak user nếu lưu DB thất bại
             try {
                 keyCloakAuthClient.deleteUser(keycloakUserId);
-                log.info("Đã rollback Keycloak user: {}", keycloakUserId);
             } catch (Exception e) {
                 log.error("Không thể rollback Keycloak user: {}", keycloakUserId, e);
             }
@@ -201,25 +202,25 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void validateUniqueness(CustomerRegistrationRequest request) {
-        if (customerRepository.existsByUsername(request.getUsername()))
+        if (userRepository.existsByUsername(request.getUsername()))
             throw new BusinessException("Tên đăng nhập đã tồn tại");
 
-        if (customerRepository.existsByEmail(request.getEmail()))
+        if (userRepository.existsByEmail(request.getEmail()))
             throw new BusinessException("Email đã tồn tại");
 
         if (request.getPhone() != null && !request.getPhone().isBlank()
-                && customerRepository.existsByPhone(request.getPhone()))
+                && userRepository.existsByPhone(request.getPhone()))
             throw new BusinessException("Số điện thoại đã được sử dụng");
     }
 
-    private Customer buildCustomer(CustomerRegistrationRequest request, Long shopId, String keycloakUserId) {
-        Customer customer = customerMapper.toEntity(request);
-        customer.setShopId(shopId);
-        customer.setTotalPoint(0.0);
-        customer.setKeycloakUserId(keycloakUserId);
-        customer.setStatus(CustomerStatus.ACTIVE);
-        customer.setPassword(passwordEncoder.encode(request.getPassword()));
-        return customer;
+    private User buildCustomer(CustomerRegistrationRequest request, Long shopId, String keycloakUserId) {
+        User user = userMapper.toEntity(request);
+        user.setShopId(shopId);
+        user.setTotalPoint(0.0);
+        user.setKeycloakUserId(keycloakUserId);
+        user.setStatus(UserStatus.ACTIVE);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        return user;
     }
 
     private void rollbackKeycloakUser(String keycloakUserId) {

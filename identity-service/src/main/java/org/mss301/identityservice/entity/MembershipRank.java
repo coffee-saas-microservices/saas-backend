@@ -42,5 +42,5 @@ public class MembershipRank {
     private Long shopId;
 
     @OneToMany(mappedBy = "membershipRank", fetch = FetchType.LAZY)
-    private List<Customer> customers;
+    private List<User> users;
 }
