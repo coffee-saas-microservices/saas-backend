@@ -124,31 +124,15 @@ public class KeyCloakAuthClient {
                 .toBodilessEntity());
     }
 
-    public KeyCloakTokenResponse loginAdmin() {
-        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("grant_type", "client_credentials");
-        formData.add("client_id", properties.getAdminClientId());
-        formData.add("client_secret", properties.getAdminClientSecret());
-
-        return restClientBuilder.build().post()
-                .uri(properties.adminTokenEndpoint())
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(formData)
-                .retrieve()
-                .body(KeyCloakTokenResponse.class);
-    }
-
     public String createUserWithAttributes(
             String username, String email, String fullName, String phone,
-            String password, List<String> realmRoles, Map<String, List<String>> attributes
-    ) {
-        String adminToken = getAdminToken();
+            String password, List<String> realmRoles, Map<String, List<String>> attributes) {
+        String adminToken = fetchAdminAccessToken();
         Map<String, Object> userFields = new HashMap<>();
         userFields.put("username", username);
         userFields.put("email", email);
         userFields.put("enabled", true);
 
-        // Build attributes map (fullname, phone, and any extra attributes)
         Map<String, List<String>> allAttributes = new HashMap<>();
         if (attributes != null) {
             allAttributes.putAll(attributes);
@@ -166,8 +150,7 @@ public class KeyCloakAuthClient {
         userFields.put("credentials", List.of(Map.of(
                 "type", "password",
                 "value", password,
-                "temporary", false
-        )));
+                "temporary", false)));
 
         URI location = execute(() -> restClientBuilder.build().post()
                 .uri(properties.adminUsersEndpoint())
@@ -189,29 +172,44 @@ public class KeyCloakAuthClient {
         return keycloakUserId;
     }
 
-    private String getAdminToken() {
-        try {
-            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-            formData.add("grant_type", "client_credentials");
-            formData.add("client_id", properties.getAdminClientId());
-            formData.add("client_secret", properties.getAdminClientSecret());
+    public void updateUserPassword(@NonNull String keycloakUserId, @NonNull String newPassword) {
+        String adminToken = fetchAdminAccessToken();
 
-            log.debug("Admin token endpoint: {}", properties.adminTokenEndpoint());
-            KeyCloakTokenResponse response = restClientBuilder.build().post()
-                    .uri(properties.adminTokenEndpoint())
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .body(formData)
+        Map<String, Object> credentials = new HashMap<>();
+        credentials.put("type", "password");
+        credentials.put("value", newPassword);
+        credentials.put("temporary", false);
+
+        String url = properties.adminUserByIdEndPoint(keycloakUserId) + "/reset-password";
+        execute(() -> restClientBuilder.build()
+                .put()
+                .uri(url)
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(credentials)
+                .retrieve()
+                .toBodilessEntity());
+    }
+
+    public void resetUserPassword(String keycloakUserId, String newPassword) {
+        String adminToken = fetchAdminAccessToken();
+
+        Map<String, Object> credentials = new HashMap<>();
+        credentials.put("type", "password");
+        credentials.put("value", newPassword);
+        credentials.put("temporary", false);
+
+        try {
+            restClientBuilder.build()
+                    .put()
+                    .uri(properties.adminUsersEndpoint() + "/" + keycloakUserId + "/reset-password")
+                    .header("Authorization", "Bearer " + adminToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(credentials)
                     .retrieve()
-                    .body(KeyCloakTokenResponse.class);
-            if (response == null || response.getAccessToken() == null) {
-                throw new BusinessException("KEYCLOAK_TOKEN_EMPTY");
-            }
-            return response.getAccessToken();
-        } catch (BusinessException e) {
-            throw e;
+                    .toBodilessEntity();
         } catch (Exception e) {
-            log.error("Failed to get admin token from Keycloak: {}", e.getMessage(), e);
-            throw new BusinessException("KEYCLOAK_ADMIN_AUTH_FAILED");
+            throw new BusinessException("Không thể đồng bộ thông tin tài khoản hệ thống bảo mật. Vui lòng thử lại!");
         }
     }
 
