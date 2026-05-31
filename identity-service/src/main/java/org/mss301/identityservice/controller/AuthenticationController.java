@@ -2,15 +2,16 @@ package org.mss301.identityservice.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.mss301.identityservice.dto.request.CustomerRegistrationRequest;
-import org.mss301.identityservice.dto.request.LoginRequest;
-import org.mss301.identityservice.dto.request.LogoutRequest;
-import org.mss301.identityservice.dto.request.ShopAccountRequest;
+import org.mss301.commonservice.exception.BusinessException;
+import org.mss301.identityservice.dto.request.*;
 import org.mss301.identityservice.dto.response.CustomerResponse;
 import org.mss301.identityservice.dto.response.LoginResponse;
+import org.mss301.identityservice.entity.User;
 import org.mss301.identityservice.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,5 +60,31 @@ public class AuthenticationController {
         response.put("status", "SUCCESS");
         response.put("message", "Cấp tài khoản thành công");
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody ChangePasswordRequest request
+            ) {
+        String keycloakUserId = jwt.getSubject();
+        authService.changePassword(keycloakUserId, request);
+        return ResponseEntity.ok("Thay đổi mật khẩu thành công");
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request
+    ) {
+        authService.forgotPassword(request);
+        return ResponseEntity.ok("Link đặt lại mật khẩu đã được gửi tới email của bạn");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request
+    ) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok("Đặt lại mật khẩu thành công");
     }
 }

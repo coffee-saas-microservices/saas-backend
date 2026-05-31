@@ -31,6 +31,8 @@ public class SecurityConfig {
                         "/api/users/register",
                         "/api/users/login",
                         "/api/users/internal/**",
+                        "/api/users/forgot-password",
+                        "/api/users/reset-password"
         };
 
         @Bean
