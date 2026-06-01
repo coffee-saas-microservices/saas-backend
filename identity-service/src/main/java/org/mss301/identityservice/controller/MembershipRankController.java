@@ -32,6 +32,12 @@ public class MembershipRankController {
         return ResponseEntity.ok(membershipRankService.getMembershipRanks(filter));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<MembershipRankResponse> getRank(@PathVariable Long id) {
+        MembershipRankResponse response = membershipRankService.getRankById(id);
+        return ResponseEntity.ok(response);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<MembershipRankResponse> updateRank(
             @PathVariable Long id,
