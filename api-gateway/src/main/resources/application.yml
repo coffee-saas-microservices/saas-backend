@@ -16,7 +16,7 @@ spring:
         - id: identity-service-route
           uri: lb://identity-service
           predicates:
-            - Path=/api/users/**, /api/auth/**, /api/membership-ranks/**, /v3/api-docs/identity
+            - Path=/api/users/**, /api/auth/**, /api/membership-ranks/**, /api/system-admin/**, /v3/api-docs/identity
 
         - id: shop-service-route
           uri: lb://shop-service
