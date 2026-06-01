@@ -47,6 +47,12 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- Spring Data Commons (PageRequest, Pageable, Sort) - không cần DataSource -->
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+		</dependency>
+
 		<!-- Swagger / OpenAPI (utility dùng chung) -->
 		<dependency>
 			<groupId>org.springdoc</groupId>
