@@ -13,7 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-@Configuration
+@Configuration("identitySecurityConfig")
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -33,7 +33,9 @@ public class SecurityConfig {
                         "/api/users/internal/**",
                         "/api/users/forgot-password",
                         "/api/users/reset-password",
-                        "/api/membership-ranks"
+                        "/api/membership-ranks",
+                        "/api/system-admin/register",
+                        "/api/system-admin/login"
         };
 
         @Bean
