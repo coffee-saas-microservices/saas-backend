@@ -56,6 +56,17 @@ public class MembershipRankImpl implements MembershipRankService {
     }
 
     @Override
+    public MembershipRankResponse getRankById(Long id) {
+        Long shopId = requireShopId();
+
+        MembershipRank rank = rankRepository
+                .findByIdAndShopIdAndStatusNot(id, shopId, MembershipRankStatus.DELETED)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy hạng thành viên"));
+
+        return rankMapper.toResponse(rank);
+    }
+
+    @Override
     @Transactional
     public MembershipRankResponse updateRank(Long id, MembershipRankRequest request) {
         Long shopId = requireShopId();

@@ -8,6 +8,7 @@ import org.mss301.identityservice.dto.response.MembershipRankResponse;
 public interface MembershipRankService {
     MembershipRankResponse createMembershipRank(MembershipRankRequest request);
     PageResponse<MembershipRankResponse> getMembershipRanks(MembershipRankFilter filter);
+    MembershipRankResponse getRankById(Long id);
     MembershipRankResponse updateRank(Long id, MembershipRankRequest request);
     void deleteRank(Long id);
 }
