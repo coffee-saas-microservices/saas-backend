@@ -2,13 +2,10 @@ package org.mss301.identityservice.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.mss301.commonservice.exception.BusinessException;
 import org.mss301.identityservice.dto.request.*;
 import org.mss301.identityservice.dto.response.CustomerResponse;
 import org.mss301.identityservice.dto.response.LoginResponse;
-import org.mss301.identityservice.entity.User;
 import org.mss301.identityservice.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -53,14 +50,11 @@ public class AuthenticationController {
     }
 
     @PostMapping("/internal/register-shop-account")
-    public ResponseEntity<Map<String, String>> registerShopAccount(
+    public ResponseEntity<LoginResponse> registerShopAccount(
             @Valid @RequestBody ShopAccountRequest request
     ) {
-        authService.registerShopAccount(request);
-        Map<String, String> response = new HashMap<>();
-        response.put("status", "SUCCESS");
-        response.put("message", "Cấp tài khoản thành công");
-        return ResponseEntity.ok(response);
+        LoginResponse response = authService.registerShopAccount(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/change-password")
@@ -87,5 +81,25 @@ public class AuthenticationController {
     ) {
         authService.resetPassword(request);
         return ResponseEntity.ok("Đặt lại mật khẩu thành công");
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<Map<String, String>> verifyOtp(
+            @Valid @RequestBody VerifyOtpRequest request
+    ) {
+        authService.verifyEmailWithOtp(request);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Xác thực email thành công! Tài khoản của bạn đã được kích hoạt");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<Map<String, String>> resendOtp(
+            @Valid @RequestBody SendOtpRequest request
+    ) {
+        authService.resendOtp(request);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Mã OTP đã được gửi lại thành công");
+        return ResponseEntity.ok(response);
     }
 }

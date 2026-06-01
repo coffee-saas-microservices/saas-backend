@@ -2,6 +2,7 @@ package org.mss301.identityservice.service.impl;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mss301.commonservice.exception.BusinessException;
@@ -12,10 +13,12 @@ import org.mss301.identityservice.dto.request.*;
 import org.mss301.identityservice.dto.response.CustomerResponse;
 import org.mss301.identityservice.dto.response.LoginResponse;
 import org.mss301.identityservice.dto.response.SystemAdminRegistrationResponse;
+import org.mss301.identityservice.entity.EmailOtp;
 import org.mss301.identityservice.entity.PasswordResetToken;
 import org.mss301.identityservice.entity.User;
 import org.mss301.identityservice.entity.enumeration.UserStatus;
 import org.mss301.identityservice.mapper.UserMapper;
+import org.mss301.identityservice.repository.EmailOtpRepository;
 import org.mss301.identityservice.repository.PasswordResetTokenRepository;
 import org.mss301.identityservice.repository.UserRepository;
 import org.mss301.identityservice.repository.MembershipRankRepository;
@@ -27,6 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -45,6 +49,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetTokenRepository tokenRepository;
     private final JavaMailSender mailSender;
+    private final EmailOtpRepository emailOtpRepository;
     @Value("${FRONTEND_URL:http://localhost:3000}")
     private String frontendUrl;
 
@@ -74,12 +79,13 @@ public class AuthServiceImpl implements AuthService {
 
         try {
             User user = buildCustomer(request, shopId, keycloakUserId);
-            user = userRepository.save(user);
+            user.setStatus(UserStatus.PENDING);
 
             user.setMembershipRank(membershipRankRepository
                     .findFirstByShopIdOrderByRequiredPointsAsc(shopId)
                     .orElseThrow(() -> new BusinessException("Lỗi cấu hình hạng thành viên!")));
             user = userRepository.save(user);
+            sendVerificationOtp(user.getEmail());
 
             return userMapper.toResponse(user);
         } catch (Exception ex) {
@@ -158,19 +164,19 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void registerShopAccount(ShopAccountRequest request) {
+    public LoginResponse registerShopAccount(ShopAccountRequest request) {
         Map<String, List<String>> extraAttributes = new HashMap<>();
         extraAttributes.put("shopId", List.of(request.getShopId().toString()));
 
         String keycloakUserId = keyCloakAuthClient.createUserWithAttributes(
                 request.getUsername(),
                 request.getEmail(),
-                (request.getFullName() != null && !request.getFullName().isBlank()) ? request.getFullName() : request.getUsername(),
+                (request.getFullName() != null && !request.getFullName().isBlank()) ? request.getFullName()
+                        : request.getUsername(),
                 request.getPhone(),
                 request.getPassword(),
                 List.of("SHOP_ADMIN"),
-                extraAttributes
-        );
+                extraAttributes);
 
         try {
             User shopAdmin = new User();
@@ -183,6 +189,16 @@ public class AuthServiceImpl implements AuthService {
             shopAdmin.setStatus(UserStatus.ACTIVE);
             shopAdmin.setPassword(passwordEncoder.encode(request.getPassword()));
             userRepository.save(shopAdmin);
+
+            KeyCloakTokenResponse tokenResponse = keyCloakAuthClient.login(request.getUsername(), request.getPassword());
+
+            return LoginResponse.builder()
+                    .accessToken(tokenResponse.getAccessToken())
+                    .refreshToken(tokenResponse.getRefreshToken())
+                    .tokenType(tokenResponse.getTokenType())
+                    .expiresIn(tokenResponse.getExpiresIn())
+                    .refreshExpiresIn(tokenResponse.getRefreshExpiresIn())
+                    .build();
         } catch (Exception ex) {
             try {
                 keyCloakAuthClient.deleteUser(keycloakUserId);
@@ -202,7 +218,7 @@ public class AuthServiceImpl implements AuthService {
             throw new BusinessException("Tài khoản đã bị khóa");
         }
 
-        if(!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             throw new BusinessException("Mật khẩu cũ không đúng");
         }
 
@@ -218,14 +234,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void forgotPassword(ForgotPasswordRequest request) {
         Long shopId = TenantContext.getCurrentShopId();
-        if (shopId == null) throw new BusinessException("Cửa hàng không tồn tại");
+        if (shopId == null)
+            throw new BusinessException("Cửa hàng không tồn tại");
 
-        User user = userRepository.findAll()
-                .stream()
-                .filter(u -> u.getEmail() != null
-                        && u.getEmail().equalsIgnoreCase(request.getEmail().trim())
-                        && u.getShopId().equals(shopId))
-                .findFirst()
+        User user = userRepository.findByEmailIgnoreCaseAndShopId(request.getEmail().trim(), shopId)
                 .orElseThrow(() -> new BusinessException("Không tìm thấy email"));
 
         tokenRepository.deleteByUser(user);
@@ -241,10 +253,12 @@ public class AuthServiceImpl implements AuthService {
             helper.setTo(user.getEmail());
             helper.setSubject("[COFFEE SAAS] YÊU CẦU ĐẶT LẠI MẬT KHẨU MỚI");
             String content = "<div style='font-family: Arial, sans-serif; line-height: 1.6;'>"
-                    + "<h3>Xin chào " + (user.getFullname() != null ? user.getFullname() : user.getUsername()) + ",</h3>"
+                    + "<h3>Xin chào " + (user.getFullname() != null ? user.getFullname() : user.getUsername())
+                    + ",</h3>"
                     + "<p>Hệ thống nhận được yêu cầu đặt lại mật khẩu cho tài khoản liên kết với Email này của bạn.</p>"
                     + "<p>Vui lòng bấm vào liên kết dưới đây để thực hiện thay đổi mật khẩu (Liên kết có giá trị trong vòng 15 phút):</p>"
-                    + "<p style='margin: 20px 0;'><a href=\"" + resetUrl + "\" style='background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Đặt lại mật khẩu mới tại đây</a></p>"
+                    + "<p style='margin: 20px 0;'><a href=\"" + resetUrl
+                    + "\" style='background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Đặt lại mật khẩu mới tại đây</a></p>"
                     + "<p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email.</p>"
                     + "</div>";
             helper.setText(content, true);
@@ -275,6 +289,80 @@ public class AuthServiceImpl implements AuthService {
         tokenRepository.delete(resetToken);
     }
 
+    @Override
+    @Transactional
+    public void verifyEmailWithOtp(VerifyOtpRequest request) {
+        String email = request.getEmail().trim();
+        String userOtp = request.getOtpCode().trim();
+
+        EmailOtp emailOtp = emailOtpRepository.findFirstByEmailOrderByExpiryDateDesc(email)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy yêu cầu xác thực OTP"));
+
+        if (!emailOtp.getOtpCode().equals(userOtp)) {
+            throw new BusinessException("Mã OTP không chính xác");
+        }
+
+        if (emailOtp.isExpired()) {
+            emailOtpRepository.delete(emailOtp);
+            throw new BusinessException("Mã OTP đã hết hiệu lực. Vui lòng thử lại sau");
+        }
+
+        Long shopId = TenantContext.getCurrentShopId();
+        User user = userRepository.findByEmailIgnoreCaseAndShopId(email, shopId)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy người dùng khớp với email này"));
+
+        user.setStatus(UserStatus.ACTIVE);
+        userRepository.save(user);
+
+        emailOtpRepository.deleteByEmail(email);
+    }
+
+    @Override
+    @Transactional
+    public void resendOtp(SendOtpRequest request) {
+        String email = request.getEmail().trim();
+
+        Optional<EmailOtp> existingOtp = emailOtpRepository.findFirstByEmailOrderByExpiryDateDesc(email);
+        if (existingOtp.isPresent()) {
+            EmailOtp emailOtp = existingOtp.get();
+            long secondsSinceLastOtp = Duration.between(emailOtp.getCreatedAt(), LocalDateTime.now()).getSeconds();
+            if (secondsSinceLastOtp < 30) {
+                long secondsLeft = 30 - secondsSinceLastOtp;
+                throw new BusinessException("Vui lòng đợi thêm " + secondsLeft + " giây nữa để yêu cầu gửi lại mã OTP.");
+            }
+        }
+        sendVerificationOtp(email);
+    }
+
+    private void sendVerificationOtp(String email) {
+        String otpCode = String.format("%06d", new Random().nextInt(1000000));
+        emailOtpRepository.deleteByEmail(email);
+        EmailOtp emailOtp = new EmailOtp(email, otpCode, 2);
+        emailOtpRepository.save(emailOtp);
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(email);
+            helper.setSubject("[COFFEE SAAS] MÃ OTP XÁC THỰC EMAIL");
+            String content = "<div style='font-family: Arial, sans-serif; line-height: 1.6; max-width: 500px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 8px;'>"
+                    + "<h2 style='color: #4CAF50; text-align: center;'>Xác Thực Tài Khoản</h2>"
+                    + "<p>Xin chào,</p>"
+                    + "<p>Bạn vừa yêu cầu mã xác thực OTP để tiến hành xác minh Email. Vui lòng sử dụng mã số dưới đây để hoàn tất quá trình:</p>"
+                    + "<div style='text-align: center; margin: 30px 0;'>"
+                    + "  <span style='font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #333; background: #f5f5f5; padding: 10px 20px; border-radius: 4px; border: 1px dashed #ccc;'>"
+                    + otpCode + "</span>"
+                    + "</div>"
+                    + "<p style='color: #ff5722;'>* Lưu ý: Mã số này có thời hạn sử dụng trong vòng <b>2 phút</b> và chỉ sử dụng được 1 lần.</p>"
+                    + "<p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email hoặc liên hệ quản trị viên.</p>"
+                    + "</div>";
+            helper.setText(content, true);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new BusinessException("Không thể gửi email chứa mã OTP lúc này. Vui lòng thử lại sau");
+        }
+    }
+
     private Map<String, Object> decodeJwtPayload(String token) {
         try {
             String[] parts = token.split("\\.");
@@ -282,21 +370,24 @@ public class AuthServiceImpl implements AuthService {
                 throw new BusinessException("Token Keycloak không hợp lệ");
             }
             String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]));
-            return new ObjectMapper().readValue(payloadJson, new TypeReference<Map<String, Object>>() {});
+            return new ObjectMapper().readValue(payloadJson, new TypeReference<Map<String, Object>>() {
+            });
         } catch (Exception e) {
             throw new BusinessException("Xác thực token thất bại");
         }
     }
 
     private void validateUniqueness(CustomerRegistrationRequest request) {
-        if (userRepository.existsByUsername(request.getUsername()))
+        Long shopId = TenantContext.getCurrentShopId();
+
+        if (userRepository.existsByUsernameAndShopId(request.getUsername(), shopId))
             throw new BusinessException("Tên đăng nhập đã tồn tại");
 
-        if (userRepository.existsByEmail(request.getEmail()))
+        if (userRepository.existsByEmailAndShopId(request.getEmail(), shopId))
             throw new BusinessException("Email đã tồn tại");
 
         if (request.getPhone() != null && !request.getPhone().isBlank()
-                && userRepository.existsByPhone(request.getPhone()))
+                && userRepository.existsByPhoneAndShopId(request.getPhone(), shopId))
             throw new BusinessException("Số điện thoại đã được sử dụng");
     }
 
@@ -305,7 +396,6 @@ public class AuthServiceImpl implements AuthService {
         user.setShopId(shopId);
         user.setTotalPoint(0.0);
         user.setKeycloakUserId(keycloakUserId);
-        user.setStatus(UserStatus.ACTIVE);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         return user;
     }
