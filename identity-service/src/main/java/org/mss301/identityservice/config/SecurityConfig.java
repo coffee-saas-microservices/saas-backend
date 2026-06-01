@@ -33,9 +33,12 @@ public class SecurityConfig {
                         "/api/users/internal/**",
                         "/api/users/forgot-password",
                         "/api/users/reset-password",
+                        "/api/users/verify-otp",
+                        "/api/users/resend-otp",
                         "/api/membership-ranks",
                         "/api/system-admin/register",
-                        "/api/system-admin/login"
+                        "/api/system-admin/login",
+                        "/api/system-admin/logout"
         };
 
         @Bean

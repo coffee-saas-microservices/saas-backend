@@ -9,8 +9,11 @@ public interface AuthService {
     CustomerResponse register(CustomerRegistrationRequest request);
     LoginResponse login(LoginRequest request);
     void logout(LogoutRequest request);
-    void registerShopAccount(ShopAccountRequest request);
+    LoginResponse registerShopAccount(ShopAccountRequest request);
     void changePassword(String keycloakUserId, ChangePasswordRequest request);
     void forgotPassword(ForgotPasswordRequest request);
     void resetPassword(ResetPasswordRequest request);
+
+    void verifyEmailWithOtp(VerifyOtpRequest request);
+    void resendOtp(SendOtpRequest request);
 }
