@@ -28,13 +28,13 @@ public class SecurityConfig {
         };
 
         private static final String[] PUBLIC_ENDPOINTS = {
-                        "/api/users/register",
-                        "/api/users/login",
-                        "/api/users/internal/**",
-                        "/api/users/forgot-password",
-                        "/api/users/reset-password",
-                        "/api/users/verify-otp",
-                        "/api/users/resend-otp",
+                        "/api/auth/register",
+                        "/api/auth/login",
+                        "/api/auth/internal/**",
+                        "/api/auth/forgot-password",
+                        "/api/auth/reset-password",
+                        "/api/auth/verify-otp",
+                        "/api/auth/resend-otp",
                         "/api/membership-ranks",
                         "/api/system-admin/register",
                         "/api/system-admin/login",

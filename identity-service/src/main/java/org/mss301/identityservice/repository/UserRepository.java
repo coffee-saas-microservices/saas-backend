@@ -1,11 +1,13 @@
 package org.mss301.identityservice.repository;
 
 import org.mss301.identityservice.entity.User;
+import org.mss301.identityservice.entity.enumeration.UserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
     boolean existsByEmail(String email);
 
     boolean existsByUsername(String username);
@@ -21,4 +23,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByPhoneAndShopId(String phone, Long shopId);
 
     Optional<User> findByEmailIgnoreCaseAndShopId(String email, Long shopId);
+
+    Optional<User> findByIdAndShopIdAndStatusNot(Long id, Long shopId, UserStatus status);
 }

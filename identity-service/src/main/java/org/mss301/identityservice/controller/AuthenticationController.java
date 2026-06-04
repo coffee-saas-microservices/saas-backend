@@ -3,7 +3,7 @@ package org.mss301.identityservice.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.mss301.identityservice.dto.request.*;
-import org.mss301.identityservice.dto.response.CustomerResponse;
+import org.mss301.identityservice.dto.response.UserResponse;
 import org.mss301.identityservice.dto.response.LoginResponse;
 import org.mss301.identityservice.service.AuthService;
 import org.springframework.http.HttpStatus;
@@ -19,16 +19,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
 
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<CustomerResponse> register(
+    public ResponseEntity<UserResponse> register(
             @Valid @RequestBody CustomerRegistrationRequest request) {
-        CustomerResponse response = authService.register(request);
+        UserResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

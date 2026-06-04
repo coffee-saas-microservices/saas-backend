@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CustomerResponse {
+public class UserResponse {
     private Long customerId;
     private String username;
     private String fullname;
@@ -21,7 +21,6 @@ public class CustomerResponse {
     private String phone;
     private String address;
     private LocalDate dob;
-    private String keycloakUserId;
     private LocalDateTime createdAt;
     private String status;
 }
