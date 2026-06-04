@@ -2,7 +2,6 @@ package org.mss301.identityservice.service.impl;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mss301.commonservice.exception.BusinessException;
@@ -10,9 +9,8 @@ import org.mss301.commonservice.keycloak.KeyCloakAuthClient;
 import org.mss301.commonservice.keycloak.KeyCloakTokenResponse;
 import org.mss301.commonservice.multitenancy.TenantContext;
 import org.mss301.identityservice.dto.request.*;
-import org.mss301.identityservice.dto.response.CustomerResponse;
+import org.mss301.identityservice.dto.response.UserResponse;
 import org.mss301.identityservice.dto.response.LoginResponse;
-import org.mss301.identityservice.dto.response.SystemAdminRegistrationResponse;
 import org.mss301.identityservice.entity.EmailOtp;
 import org.mss301.identityservice.entity.PasswordResetToken;
 import org.mss301.identityservice.entity.User;
@@ -55,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public CustomerResponse register(CustomerRegistrationRequest request) {
+    public UserResponse register(CustomerRegistrationRequest request) {
         Long shopId = TenantContext.getCurrentShopId();
         if (shopId == null)
             throw new BusinessException("Cửa hàng không tồn tại");
