@@ -13,6 +13,7 @@ import org.mss301.identityservice.dto.response.LoginResponse;
 import org.mss301.identityservice.dto.response.SystemAdminRegistrationResponse;
 import org.mss301.identityservice.entity.User;
 import org.mss301.identityservice.entity.enumeration.UserStatus;
+import org.mss301.identityservice.entity.enumeration.UserType;
 import org.mss301.identityservice.mapper.SystemAdminMapper;
 import org.mss301.identityservice.repository.UserRepository;
 import org.mss301.identityservice.service.SystemAuthService;
@@ -64,6 +65,7 @@ public class SystemAuthServiceImpl implements SystemAuthService {
             systemAdmin.setStatus(UserStatus.ACTIVE);
             systemAdmin.setPassword(passwordEncoder.encode(request.getPassword()));
             systemAdmin.setTotalPoint(0.0);
+            systemAdmin.setUserType(UserType.SYSTEM_ADMIN);
             User savedAdmin = userRepository.save(systemAdmin);
 
             return systemAdminMapper.toResponse(savedAdmin);

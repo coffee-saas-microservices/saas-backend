@@ -15,6 +15,7 @@ import org.mss301.identityservice.entity.EmailOtp;
 import org.mss301.identityservice.entity.PasswordResetToken;
 import org.mss301.identityservice.entity.User;
 import org.mss301.identityservice.entity.enumeration.UserStatus;
+import org.mss301.identityservice.entity.enumeration.UserType;
 import org.mss301.identityservice.mapper.UserMapper;
 import org.mss301.identityservice.repository.EmailOtpRepository;
 import org.mss301.identityservice.repository.PasswordResetTokenRepository;
@@ -186,6 +187,7 @@ public class AuthServiceImpl implements AuthService {
             shopAdmin.setKeycloakUserId(keycloakUserId);
             shopAdmin.setStatus(UserStatus.ACTIVE);
             shopAdmin.setPassword(passwordEncoder.encode(request.getPassword()));
+            shopAdmin.setUserType(UserType.SHOP_ADMIN);
             userRepository.save(shopAdmin);
 
             KeyCloakTokenResponse tokenResponse = keyCloakAuthClient.login(request.getUsername(), request.getPassword());
@@ -395,6 +397,7 @@ public class AuthServiceImpl implements AuthService {
         user.setTotalPoint(0.0);
         user.setKeycloakUserId(keycloakUserId);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setUserType(UserType.CUSTOMER);
         return user;
     }
 

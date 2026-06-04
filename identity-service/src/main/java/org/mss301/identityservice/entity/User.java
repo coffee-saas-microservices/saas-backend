@@ -3,6 +3,7 @@ package org.mss301.identityservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.mss301.identityservice.entity.enumeration.UserStatus;
+import org.mss301.identityservice.entity.enumeration.UserType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,6 +37,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private UserStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_type", nullable = false)
+    private UserType userType;
 
     @Column(name = "keycloak_user_id", nullable = false, unique = true, length = 100)
     private String keycloakUserId;
