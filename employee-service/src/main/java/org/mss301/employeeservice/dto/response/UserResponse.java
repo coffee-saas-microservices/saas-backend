@@ -1,10 +1,9 @@
-package org.mss301.identityservice.dto.response;
+package org.mss301.employeeservice.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.mss301.identityservice.entity.enumeration.UserType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,5 +23,5 @@ public class UserResponse {
     private LocalDate dob;
     private LocalDateTime createdAt;
     private String status;
-    private UserType userType;
+    private String userType;
 }

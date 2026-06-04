@@ -213,6 +213,32 @@ public class KeyCloakAuthClient {
         }
     }
 
+    public void updateUserRoles(@NonNull String keycloakUserId, @NonNull List<String> newRoles) {
+        String adminToken = fetchAdminAccessToken();
+
+        String mappingUrl = properties.adminUserRealmRoleMappingEndpoint(keycloakUserId);
+        List<Map<String, Object>> currentRoles = execute(() -> restClientBuilder.build()
+                .get()
+                .uri(mappingUrl)
+                .header("Authorization", "Bearer " + adminToken)
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<Map<String, Object>>>() {
+                }));
+
+        if (currentRoles != null && !currentRoles.isEmpty()) {
+            execute(() -> restClientBuilder.build()
+                    .method(org.springframework.http.HttpMethod.DELETE)
+                    .uri(mappingUrl)
+                    .header("Authorization", "Bearer " + adminToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(currentRoles)
+                    .retrieve()
+                    .toBodilessEntity());
+        }
+
+        assignRealmRoles(adminToken, keycloakUserId, newRoles);
+    }
+
     private String fetchAdminAccessToken() {
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("client_id", properties.getAdminClientId());

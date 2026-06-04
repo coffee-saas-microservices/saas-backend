@@ -6,6 +6,7 @@ import org.mss301.commonservice.dto.response.PageResponse;
 import org.mss301.identityservice.dto.request.UpdateProfileRequest;
 import org.mss301.identityservice.dto.request.UserFilter;
 import org.mss301.identityservice.dto.response.UserResponse;
+import org.mss301.identityservice.entity.enumeration.UserType;
 import org.mss301.identityservice.service.UserService;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
@@ -49,5 +50,12 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok("Xóa khách hàng thành công");
+    }
+
+    @PatchMapping("/{id}/user-type")
+    public ResponseEntity<UserResponse> assignUserType(
+            @PathVariable Long id,
+            @RequestParam UserType userType) {
+        return ResponseEntity.ok(userService.assignUserType(id, userType));
     }
 }

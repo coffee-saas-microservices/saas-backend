@@ -17,6 +17,7 @@ public interface UserMapper {
     @Mapping(source = "id", target = "customerId")
     @Mapping(source = "membershipRank.id", target = "rankId")
     @Mapping(source = "status", target = "status")
+    @Mapping(source = "userType", target = "userType")
     UserResponse toResponse(User user);
 
     void updateCustomerRequest(UpdateProfileRequest request, @MappingTarget User user);

@@ -23,6 +23,11 @@ spring:
           predicates:
             - Path=/api/shops/**, /api/internal/shops/**, /v3/api-docs/shop
 
+        - id: employee-service-route
+          uri: lb://employee-service
+          predicates:
+            - Path=/api/employees/**, /v3/api-docs/employee
+
 eureka:
   instance:
     prefer-ip-address: true
@@ -38,3 +43,5 @@ springdoc:
         url: /v3/api-docs/identity
       - name: 2. Shop Service
         url: /v3/api-docs/shop
+      - name: 3. Employee Service
+        url: /v3/api-docs/employee
