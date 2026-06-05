@@ -33,11 +33,10 @@ public class UserServiceImpl implements UserService {
     private final KeyCloakAuthClient keyCloakAuthClient;
 
     private static final Map<UserType, String> USER_TYPE_TO_KEYCLOAK_ROLE = Map.of(
-            UserType.CUSTOMER,     "CUSTOMER",
-            UserType.EMPLOYEE,     "EMPLOYEE",
-            UserType.SHOP_ADMIN,   "SHOP_ADMIN",
-            UserType.SYSTEM_ADMIN, "SYSTEM_ADMIN"
-    );
+            UserType.CUSTOMER, "CUSTOMER",
+            UserType.EMPLOYEE, "EMPLOYEE",
+            UserType.SHOP_ADMIN, "SHOP_ADMIN",
+            UserType.SYSTEM_ADMIN, "SYSTEM_ADMIN");
 
     @Override
     public UserResponse getUserProfile(String keycloakUserId) {
