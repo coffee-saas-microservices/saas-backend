@@ -23,6 +23,10 @@ public class SecurityConfig {
             "/swagger-ui.html",
             "/v3/api-docs/**",
             "/v3/api-docs.yaml",
+            "/api/employee/unavailability/**",
+            "/api/employees/**",
+            "/api/schedules/**",
+            "/api/shift-templates/**",
     };
 
     @Bean
