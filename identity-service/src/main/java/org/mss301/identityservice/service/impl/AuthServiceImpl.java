@@ -143,7 +143,7 @@ public class AuthServiceImpl implements AuthService {
             if (user.getStatus() != UserStatus.ACTIVE) {
                 throw new BusinessException("Tài khoản admin của bạn đã bị khóa hoặc ngừng hoạt động");
             }
-        } if (roles.contains("EMPLOYEE")) {
+        } else if (roles.contains("EMPLOYEE")) {
             User user = userRepository.findByKeycloakUserId(keycloakUserId)
                     .orElseThrow(() -> new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác"));
 
