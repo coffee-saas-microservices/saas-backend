@@ -7,7 +7,6 @@ import org.mss301.employeeservice.entity.enumeration.EmployeeType;
 @Data
 public class EmployeeRequest {
 
-    // Required only on create; ignored on update (shopId/userId are immutable after creation)
     private Long userId;
 
     @NotNull(message = "employeeType không được để trống")

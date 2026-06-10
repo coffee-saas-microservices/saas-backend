@@ -26,7 +26,7 @@ spring:
         - id: employee-service-route
           uri: lb://employee-service
           predicates:
-            - Path=/api/employees/**, /v3/api-docs/employee
+            - Path=/api/employees/**, /api/shift-templates/**, /v3/api-docs/employee
 
 eureka:
   instance:

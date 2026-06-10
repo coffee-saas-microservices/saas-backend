@@ -5,6 +5,10 @@ spring:
   application:
     name: ${APPLICATION_NAME}
 
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?options=-c%20TimeZone=Asia/Ho_Chi_Minh
     username: ${DB_USER}
