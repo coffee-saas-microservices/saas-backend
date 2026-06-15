@@ -1,4 +1,4 @@
-package org.mss301.inventoryservice.command.data;
+package org.mss301.inventoryservice.command.data.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,44 +8,49 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.mss301.inventoryservice.command.data.enumeration.InventoryStatus;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "stock_check_sessions")
+@Table(name = "ingredient_batches")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class StockCheckSession {
+public class IngredientBatch {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    @Column(name = "id", updatable = false, nullable = false)
+    UUID id;
+
+    @ManyToOne
+    @JoinColumn(name = "ingredient_id", nullable = false)
+    RawIngredient rawIngredient;
 
     @Column(name = "shop_id", nullable = false)
     Long shopId;
 
-    @Column(name = "code", length = 50)
-    String code;
+    @Column(name = "batch_code", length = 50)
+    String batchCode;
 
-    @Column(name = "created_by", nullable = false)
-    Long createdBy;
+    @Column(name = "supplier_name")
+    String supplierName;
 
-    @Column(name = "approved_by")
-    Long approvedBy;
+    @Column(name = "expired_at", nullable = false)
+    LocalDateTime expiredAt;
 
-    @Column(name = "is_approved", nullable = false)
-    Boolean isApproved;
+    @Column(name = "initial_quantity", nullable = false)
+    Double initialQuantity;
 
-    @Column(name = "note", columnDefinition = "TEXT")
-    String note;
+    @Column(name = "current_quantity", nullable = false)
+    Double currentQuantity;
+
+    @Column(name = "import_price", nullable = false)
+    Double importPrice;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     LocalDateTime createdAt;
-
-    @Column(name = "completed_at")
-    LocalDateTime completedAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)

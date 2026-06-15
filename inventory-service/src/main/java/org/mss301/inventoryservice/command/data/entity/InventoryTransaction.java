@@ -1,4 +1,4 @@
-package org.mss301.inventoryservice.command.data;
+package org.mss301.inventoryservice.command.data.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,6 +9,7 @@ import org.mss301.inventoryservice.command.data.enumeration.InventoryStatus;
 import org.mss301.inventoryservice.command.data.enumeration.TransactionType;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "inventory_transactions", indexes = {
@@ -27,8 +28,8 @@ import java.time.LocalDateTime;
 public class InventoryTransaction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    @Column(name = "id", updatable = false, nullable = false)
+    UUID id;
 
     @Column(name = "shop_id", nullable = false)
     Long shopId;

@@ -1,51 +1,49 @@
-package org.mss301.inventoryservice.command.data;
+package org.mss301.inventoryservice.command.data.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.mss301.inventoryservice.command.data.enumeration.BaseUnit;
 import org.mss301.inventoryservice.command.data.enumeration.InventoryStatus;
+import org.mss301.inventoryservice.command.data.enumeration.StorageType;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "ingredient_batches")
+@Table(name = "raw_ingredients")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class IngredientBatch {
+public class RawIngredient {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "ingredient_id", nullable = false)
-    RawIngredient rawIngredient;
+    @Column(name = "id", updatable = false, nullable = false)
+    UUID id;
 
     @Column(name = "shop_id", nullable = false)
     Long shopId;
 
-    @Column(name = "batch_code", length = 50)
-    String batchCode;
+    @Column(name = "name", nullable = false)
+    String name;
 
-    @Column(name = "supplier_name")
-    String supplierName;
+    @Column(name = "sku_code", nullable = false, length = 50)
+    String skuCode;
 
-    @Column(name = "expired_at", nullable = false)
-    LocalDateTime expiredAt;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "base_unit", nullable = false)
+    BaseUnit baseUnit;
 
-    @Column(name = "initial_quantity", nullable = false)
-    Double initialQuantity;
+    @Column(name = "min_stock_alert")
+    Double minStockAlert;
 
-    @Column(name = "current_quantity", nullable = false)
-    Double currentQuantity;
-
-    @Column(name = "import_price", nullable = false)
-    Double importPrice;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "storage_type", nullable = false)
+    StorageType storageType;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)

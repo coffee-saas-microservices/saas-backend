@@ -1,4 +1,4 @@
-package org.mss301.inventoryservice.command.data;
+package org.mss301.inventoryservice.command.data.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -8,43 +8,45 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.mss301.inventoryservice.command.data.enumeration.InventoryStatus;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "stock_check_details")
+@Table(name = "stock_check_sessions")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class StockCheckDetail {
+public class StockCheckSession {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    @Column(name = "id", updatable = false, nullable = false)
+    UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "session_id", nullable = false)
-    StockCheckSession session;
+    @Column(name = "shop_id", nullable = false)
+    Long shopId;
 
-    @ManyToOne
-    @JoinColumn(name = "ingredient_id", nullable = false)
-    RawIngredient ingredient;
+    @Column(name = "code", length = 50)
+    String code;
 
-    @Column(name = "snapshot_quantity", nullable = false)
-    Double snapshotQuantity;
+    @Column(name = "created_by", nullable = false)
+    Long createdBy;
 
-    @Column(name = "actual_quantity")
-    Double actualQuantity;
+    @Column(name = "approved_by")
+    Long approvedBy;
 
-    @Column(name = "diff_quantity")
-    Double diffQuantity;
+    @Column(name = "is_approved", nullable = false)
+    Boolean isApproved;
 
-    @Column(name = "reason", columnDefinition = "TEXT")
-    String reason;
+    @Column(name = "note", columnDefinition = "TEXT")
+    String note;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     LocalDateTime createdAt;
+
+    @Column(name = "completed_at")
+    LocalDateTime completedAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)

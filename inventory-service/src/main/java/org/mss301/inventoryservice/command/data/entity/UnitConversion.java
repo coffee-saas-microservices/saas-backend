@@ -1,13 +1,16 @@
-package org.mss301.inventoryservice.command.data;
+package org.mss301.inventoryservice.command.data.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.mss301.inventoryservice.command.data.enumeration.BaseUnit;
 import org.mss301.inventoryservice.command.data.enumeration.InputUnit;
 import org.mss301.inventoryservice.command.data.enumeration.InventoryStatus;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "unit_conversions")
@@ -19,8 +22,8 @@ import java.time.LocalDateTime;
 public class UnitConversion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    @Column(name = "id", updatable = false, nullable = false)
+    UUID id;
 
     @Column(name = "shop_id", nullable = false)
     Long shopId;
@@ -43,9 +46,11 @@ public class UnitConversion {
     @JoinColumn(name = "ingredient_id", nullable = false)
     RawIngredient ingredient;
 
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     LocalDateTime updatedAt;
 
