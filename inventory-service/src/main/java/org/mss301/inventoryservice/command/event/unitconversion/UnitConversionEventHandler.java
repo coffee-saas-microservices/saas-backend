@@ -10,6 +10,8 @@ import org.mss301.inventoryservice.command.data.repository.UnitConversionReposit
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class UnitConversionEventHandler {
@@ -19,17 +21,37 @@ public class UnitConversionEventHandler {
 
     @EventHandler
     public void on(UnitConversionCreatedEvent event) {
+
         UnitConversion entity = new UnitConversion();
-        // Copy các trường cơ bản (String, Double, Boolean)
         BeanUtils.copyProperties(event, entity);
 
-        // Map khóa ngoại bằng tay
         RawIngredient ingredientRef = rawIngredientRepository.getReferenceById(event.getIngredientId());
         entity.setIngredient(ingredientRef);
 
-        // Set trạng thái mặc định (vì trong entity cột này nullable = false)
-        entity.setInventoryStatus(InventoryStatus.ACTIVE); // Hoặc enum tương ứng của bạn
+        entity.setInventoryStatus(InventoryStatus.ACTIVE);
 
         unitConversionRepository.save(entity);
+    }
+
+    @EventHandler
+    public void on(UnitConversionUpdatedEvent event) {
+
+        Optional<UnitConversion> entity = unitConversionRepository.findById(event.getId());
+
+        entity.ifPresent(unitConversion -> {
+            BeanUtils.copyProperties(event, unitConversion);
+            unitConversionRepository.save(unitConversion);
+        });
+    }
+
+    @EventHandler
+    public void on(UnitConversionDeletedEvent event) {
+
+        Optional<UnitConversion> entity = unitConversionRepository.findById(event.getId());
+
+        entity.ifPresent(unitConversion -> {
+            unitConversion.setInventoryStatus(InventoryStatus.DELETED);
+            unitConversionRepository.save(unitConversion);
+        });
     }
 }
