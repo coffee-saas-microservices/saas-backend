@@ -28,6 +28,11 @@ spring:
           predicates:
             - Path=/api/employees/**, /api/shift-templates/**, /api/employee/unavailability/**, /api/schedules/**, /v3/api-docs/employee
 
+        - id: inventory-service-route
+          uri: lb://inventory-service
+          predicates:
+            - Path=/api/**, /v3/api-docs/inventory
+
 eureka:
   instance:
     prefer-ip-address: true
@@ -45,3 +50,5 @@ springdoc:
         url: /v3/api-docs/shop
       - name: 3. Employee Service
         url: /v3/api-docs/employee
+      - name: 4. Inventory Service
+        url: /v3/api-docs/inventory
