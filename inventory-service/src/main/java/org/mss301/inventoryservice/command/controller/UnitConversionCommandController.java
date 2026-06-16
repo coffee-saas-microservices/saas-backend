@@ -6,7 +6,7 @@ import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.mss301.inventoryservice.command.command.CreateUnitConversionCommand;
 import org.mss301.inventoryservice.command.command.DeleteUnitConversionCommand;
 import org.mss301.inventoryservice.command.command.UpdateUnitConversionCommand;
-import org.mss301.inventoryservice.command.model.request.UnitConversionRequest;
+import org.mss301.inventoryservice.command.model.UnitConversionRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

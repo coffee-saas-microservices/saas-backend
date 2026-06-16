@@ -1,4 +1,4 @@
-package org.mss301.inventoryservice.command.model.request;
+package org.mss301.inventoryservice.command.model;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

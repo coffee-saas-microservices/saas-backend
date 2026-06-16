@@ -1,24 +1,24 @@
-package org.mss301.inventoryservice.command.model.response;
+package org.mss301.inventoryservice.query.model;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.mss301.inventoryservice.command.data.enumeration.BaseUnit;
 import org.mss301.inventoryservice.command.data.enumeration.InputUnit;
 import org.mss301.inventoryservice.command.data.enumeration.InventoryStatus;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UnitConversionResponse {
 
-    Long id;
-    Long ingredientId;
+    UUID id;
+    UUID ingredientId;
+    Long shopId;
     String ingredientName;
     InputUnit fromUnit;
     BaseUnit toUnit;
