@@ -13,44 +13,30 @@ spring:
           lower-case-service-id: true
 
       routes:
-        # ===== Service ĐÃ migrate & chạy đủ -> route sang microservice mới =====
-        # Lưu ý: /api/subscriptions/** (checkout) CỐ Ý không route sang service mới
-        # vì FE đang dùng contract checkout/v2 (PayOS) của monolith -> để nó fallback về monolith.
-        # Service mới vẫn test trực tiếp được qua Swagger (subscription-service:8084).
+        - id: identity-service-route
+          uri: lb://identity-service
+          predicates:
+            - Path=/api/users/**, /api/auth/**, /api/membership-ranks/**, /api/system-admin/**, /v3/api-docs/identity
+
+        - id: shop-service-route
+          uri: lb://shop-service
+          predicates:
+            - Path=/api/shops/**, /api/internal/shops/**, /v3/api-docs/shop
+
+        - id: employee-service-route
+          uri: lb://employee-service
+          predicates:
+            - Path=/api/employees/**, /api/shift-templates/**, /api/employee/unavailability/**, /api/schedules/**, /v3/api-docs/employee
+
         - id: subscription-service-route
           uri: lb://subscription-service
           predicates:
-            - Path=/api/subscription-plan/**, /v3/api-docs/subscription
+            - Path=/api/subscription-plan/**, /api/subscriptions/**, /v3/api-docs/subscription
 
         - id: payment-service-route
           uri: lb://payment-service
           predicates:
             - Path=/api/payments/**, /v3/api-docs/payment
-
-        # ===== STRANGLER FALLBACK =====
-        # Mọi path /api/** còn lại (auth, products, orders, inventory, shops, employees,
-        # promotion, ai, map, customers...) đẩy về monolith MSSOLD đang chạy ở cổng khác.
-        # order: 1 (thấp ưu tiên hơn các route ở trên, mặc định order 0) nên các route
-        # microservice ở trên luôn được khớp trước.
-        - id: monolith-fallback
-          uri: ${MONOLITH_URL:http://localhost:8081}
-          predicates:
-            - Path=/api/**
-          order: 1
-
-        # ----- Khi nào dựng xong & chạy các service dưới đây thì bỏ comment để route sang service mới -----
-        # - id: identity-service-route
-        #   uri: lb://identity-service
-        #   predicates:
-        #     - Path=/api/users/**, /api/auth/**, /api/membership-ranks/**, /api/system-admin/**, /v3/api-docs/identity
-        # - id: shop-service-route
-        #   uri: lb://shop-service
-        #   predicates:
-        #     - Path=/api/shops/**, /api/internal/shops/**, /v3/api-docs/shop
-        # - id: employee-service-route
-        #   uri: lb://employee-service
-        #   predicates:
-        #     - Path=/api/employees/**, /api/shift-templates/**, /api/employee/unavailability/**, /api/schedules/**, /v3/api-docs/employee
 
 eureka:
   instance:

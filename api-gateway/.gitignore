@@ -37,6 +37,9 @@ build/
 src/main/resources/.env
 src/test/resources/.env
 
+### local-only Spring profile (cấu hình strangler theo máy, không commit) ###
+src/main/resources/application-local.yml
+
 .mvn/
 mvnw
 mvnw.cmd
