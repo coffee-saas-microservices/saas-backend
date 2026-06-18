@@ -10,7 +10,6 @@ import org.mss301.inventoryservice.command.data.enumeration.InputUnit;
 import org.mss301.inventoryservice.command.data.enumeration.InventoryStatus;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "unit_conversions")
@@ -23,7 +22,7 @@ public class UnitConversion {
 
     @Id
     @Column(name = "id", updatable = false, nullable = false)
-    UUID id;
+    String id;
 
     @Column(name = "shop_id", nullable = false)
     Long shopId;

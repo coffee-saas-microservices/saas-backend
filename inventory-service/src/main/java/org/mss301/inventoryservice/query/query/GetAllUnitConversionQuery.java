@@ -11,6 +11,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetAllUnitConversionQuery {
-    private UUID ingredientId;
+    private String ingredientId;
     private InventoryStatus status;
 }

@@ -1,13 +1,13 @@
-package org.mss301.inventoryservice.command.event.rawingredient;
+package org.mss301.inventoryservice.query.model;
 
-import lombok.Builder;
 import lombok.Data;
 import org.mss301.inventoryservice.command.data.enumeration.BaseUnit;
 import org.mss301.inventoryservice.command.data.enumeration.InventoryStatus;
 
+import java.util.UUID;
+
 @Data
-@Builder
-public class RawIngredientCreatedEvent {
+public class RawIngredientResponse {
     private String id;
     private Long shopId;
     private String name;

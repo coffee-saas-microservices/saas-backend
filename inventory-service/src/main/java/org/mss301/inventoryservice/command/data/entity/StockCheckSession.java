@@ -8,7 +8,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.mss301.inventoryservice.command.data.enumeration.InventoryStatus;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "stock_check_sessions")
@@ -21,7 +20,7 @@ public class StockCheckSession {
 
     @Id
     @Column(name = "id", updatable = false, nullable = false)
-    UUID id;
+    String id;
 
     @Column(name = "shop_id", nullable = false)
     Long shopId;

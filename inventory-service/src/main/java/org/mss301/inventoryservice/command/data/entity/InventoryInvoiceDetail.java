@@ -9,7 +9,6 @@ import org.mss301.inventoryservice.command.data.enumeration.InputUnit;
 import org.mss301.inventoryservice.command.data.enumeration.InventoryStatus;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "inventory_invoice_details")
@@ -22,7 +21,7 @@ public class InventoryInvoiceDetail {
 
     @Id
     @Column(name = "id", updatable = false, nullable = false)
-    UUID id;
+    String id;
 
     @ManyToOne
     @JoinColumn(name = "invoice_id", nullable = false)

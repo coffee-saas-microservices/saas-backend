@@ -14,8 +14,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UnitConversionUpdatedEvent {
-    UUID id;
-    UUID ingredientId;
+    String id;
+    String ingredientId;
     InputUnit fromUnit;
     BaseUnit toUnit;
     Double conversionFactor;

@@ -21,7 +21,7 @@ public class IngredientBatch {
 
     @Id
     @Column(name = "id", updatable = false, nullable = false)
-    UUID id;
+    String id;
 
     @ManyToOne
     @JoinColumn(name = "ingredient_id", nullable = false)

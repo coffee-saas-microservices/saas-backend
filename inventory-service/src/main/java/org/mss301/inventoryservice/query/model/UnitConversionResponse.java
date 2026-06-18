@@ -16,8 +16,8 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UnitConversionResponse {
 
-    UUID id;
-    UUID ingredientId;
+    String id;
+    String ingredientId;
     Long shopId;
     String ingredientName;
     InputUnit fromUnit;
