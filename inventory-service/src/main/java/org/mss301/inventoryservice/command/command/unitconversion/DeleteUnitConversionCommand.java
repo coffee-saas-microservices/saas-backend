@@ -1,4 +1,4 @@
-package org.mss301.inventoryservice.command.command;
+package org.mss301.inventoryservice.command.command.unitconversion;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

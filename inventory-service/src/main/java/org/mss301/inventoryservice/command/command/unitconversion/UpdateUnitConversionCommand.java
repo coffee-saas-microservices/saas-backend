@@ -1,7 +1,5 @@
-package org.mss301.inventoryservice.command.command;
+package org.mss301.inventoryservice.command.command.unitconversion;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +14,7 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateUnitConversionCommand {
+public class UpdateUnitConversionCommand {
 
     @TargetAggregateIdentifier
     UUID id;
