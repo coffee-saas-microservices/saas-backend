@@ -24,8 +24,6 @@ spring:
       hibernate:
         format_sql: false
 
-# Eureka: cần BẬT để Feign tìm payment-service / shop-service qua tên service.
-# (Phần Plan CRUD vẫn test được kể cả khi discovery-server chưa chạy — chỉ là không đăng ký.)
 eureka:
   instance:
     prefer-ip-address: true
@@ -33,8 +31,12 @@ eureka:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL}
 
+# URL gốc của chính payment-service, dùng để dựng link thanh toán (mock) trả cho client
+payment:
+  base-url: ${PAYMENT_BASE_URL:http://localhost:8085}
+
 springdoc:
   api-docs:
-    path: /v3/api-docs/subscription
+    path: /v3/api-docs/payment
   swagger-ui:
     path: /swagger-ui.html
