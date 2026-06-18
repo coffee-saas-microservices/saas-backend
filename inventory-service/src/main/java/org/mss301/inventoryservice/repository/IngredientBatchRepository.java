@@ -1,0 +1,41 @@
+package org.mss301.inventoryservice.repository;
+
+import org.mss301.inventoryservice.entity.IngredientBatch;
+import org.mss301.inventoryservice.entity.enumeration.InventoryStatus;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface IngredientBatchRepository
+        extends JpaRepository<IngredientBatch, Long>, JpaSpecificationExecutor<IngredientBatch> {
+
+    // Logic tính tổng tồn kho hiện tại của 1 nguyên liệu
+    // Trả về Double (như đã thống nhất đổi Integer -> Double)
+    @Query("SELECT SUM(b.currentQuantity) FROM IngredientBatch b " +
+            "WHERE b.rawIngredient.id = :ingredientId AND b.inventoryStatus = :status")
+    Double sumQuantityByIngredientIdAndStatus(@Param("ingredientId") Long ingredientId,
+                                              @Param("status") InventoryStatus inventoryStatus);
+
+    // Lấy danh sách lô còn hàng để trừ kho (FIFO)
+    // Sắp xếp: Hết hạn trước -> Trừ trước. Nhập trước -> Trừ trước.
+    @Query("SELECT b FROM IngredientBatch b" +
+            " WHERE b.shopId = :shopId " +
+            "AND b.rawIngredient.id = :ingredientId " +
+            "AND b.currentQuantity > 0 " +
+            "AND b.inventoryStatus = :status " +
+            "ORDER BY b.expiredAt ASC, b.createdAt ASC")
+    List<IngredientBatch> findAllAvailableBatchesForDeduction(
+            @Param("shopId") Long shopId,
+            @Param("ingredientId") Long ingredientId,
+            @Param("status") InventoryStatus status);
+
+    List<IngredientBatch> findByRawIngredientIdAndInventoryStatusOrderByExpiredAtAsc(Long ingredientId, InventoryStatus status);
+
+    List<IngredientBatch> findByRawIngredientIdAndInventoryStatusOrderByExpiredAtDesc(Long ingredientId, InventoryStatus status);
+
+}
