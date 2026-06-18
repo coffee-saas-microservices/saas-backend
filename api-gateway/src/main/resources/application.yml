@@ -13,6 +13,11 @@ spring:
           lower-case-service-id: true
 
       routes:
+        - id: inventory-service-route
+          uri: lb://inventory-service
+          predicates:
+            - Path=/api/**, /v3/api-docs/inventory
+
         - id: identity-service-route
           uri: lb://identity-service
           predicates:
@@ -55,7 +60,9 @@ springdoc:
         url: /v3/api-docs/shop
       - name: 3. Employee Service
         url: /v3/api-docs/employee
-      - name: 4. Subscription Service
+      - name: 4. Inventory Service
+        url: /v3/api-docs/inventory
+      - name: 5. Subscription Service
         url: /v3/api-docs/subscription
-      - name: 5. Payment Service
+      - name: 6. Payment Service
         url: /v3/api-docs/payment
