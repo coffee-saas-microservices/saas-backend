@@ -43,4 +43,17 @@ public class Shop {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    // --- Gói dịch vụ hiện tại của shop (được subscription-service cập nhật sau khi thanh toán) ---
+    @Column(name = "current_plan_id")
+    private Long currentPlanId;
+
+    @Column(name = "current_plan_name")
+    private String currentPlanName;
+
+    @Column(name = "subscription_status")
+    private String subscriptionStatus;
+
+    @Column(name = "subscription_ended_at")
+    private LocalDateTime subscriptionEndedAt;
 }

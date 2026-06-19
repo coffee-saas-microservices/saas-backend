@@ -13,6 +13,11 @@ spring:
           lower-case-service-id: true
 
       routes:
+        - id: inventory-service-route
+          uri: lb://inventory-service
+          predicates:
+            - Path=/api/**, /v3/api-docs/inventory
+
         - id: identity-service-route
           uri: lb://identity-service
           predicates:
@@ -28,10 +33,15 @@ spring:
           predicates:
             - Path=/api/employees/**, /api/shift-templates/**, /api/employee/unavailability/**, /api/schedules/**, /v3/api-docs/employee
 
-        - id: inventory-service-route
-          uri: lb://inventory-service
+        - id: subscription-service-route
+          uri: lb://subscription-service
           predicates:
-            - Path=/api/**, /v3/api-docs/inventory
+            - Path=/api/subscription-plan/**, /api/subscriptions/**, /v3/api-docs/subscription
+
+        - id: payment-service-route
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/payments/**, /v3/api-docs/payment
 
 eureka:
   instance:
@@ -52,3 +62,7 @@ springdoc:
         url: /v3/api-docs/employee
       - name: 4. Inventory Service
         url: /v3/api-docs/inventory
+      - name: 5. Subscription Service
+        url: /v3/api-docs/subscription
+      - name: 6. Payment Service
+        url: /v3/api-docs/payment
