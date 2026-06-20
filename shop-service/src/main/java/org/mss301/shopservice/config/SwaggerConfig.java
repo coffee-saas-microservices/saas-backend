@@ -16,12 +16,14 @@ public class SwaggerConfig {
                         .title("Shop Service API")
                         .version("1.0.0")
                         .description("""
-                                API quản lý thông tin cửa hàng (Shop/Tenant).
+                                API quản lý cửa hàng (Shop/Tenant) và gói dịch vụ (Subscription).
 
                                 **Chức năng chính:**
                                 - Quản lý thông tin shop (CRUD)
                                 - Resolve domain → shopId (internal API)
                                 - Quản lý trạng thái shop (ACTIVE / INACTIVE)
+                                - Quản lý gói dịch vụ (Subscription Plan CRUD)
+                                - Mua gói dịch vụ và xử lý thanh toán
 
                                 **Lưu ý:** Nhấn nút Authorize và nhập JWT token để test các API bảo mật.
                                 """));
