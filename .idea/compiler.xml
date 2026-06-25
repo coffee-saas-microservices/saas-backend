@@ -22,7 +22,7 @@
         <module name="identity-service" />
         <module name="employee-service" />
       </profile>
-      <profile name="Annotation profile for inventory-service" enabled="true">
+      <profile name="Annotation profile for catalog-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -32,12 +32,14 @@
         <module name="shop-service" />
         <module name="inventory-service" />
         <module name="common-service" />
+        <module name="catalog-service" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="api-gateway" options="-parameters" />
+      <module name="catalog-service" options="-parameters" />
       <module name="common-service" options="-parameters" />
       <module name="discovery-server" options="-parameters" />
       <module name="employee-service" options="-parameters" />
