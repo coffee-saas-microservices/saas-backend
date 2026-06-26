@@ -17,7 +17,7 @@ public interface StockCheckMapper {
     StockCheckSessionResponse toSessionResponse(StockCheckSession entity);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "shop", ignore = true)
+    @Mapping(target = "shopId", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "isApproved", constant = "false")
     @Mapping(target = "inventoryStatus", constant = "ACTIVE") // Hoặc DRAFT

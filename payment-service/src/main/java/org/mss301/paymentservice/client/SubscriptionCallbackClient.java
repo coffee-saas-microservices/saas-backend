@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
  * Gọi callback sang subscription-service khi thanh toán (referenceType = SUBSCRIPTION) thành công.
  * Tìm service qua Eureka theo tên "subscription-service".
  */
-@FeignClient(name = "subscription-service")
+@FeignClient(name = "shop-service")
 public interface SubscriptionCallbackClient {
 
     @PostMapping("/api/internal/subscriptions/payment-result")

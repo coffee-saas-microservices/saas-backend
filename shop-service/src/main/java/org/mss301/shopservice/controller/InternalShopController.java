@@ -28,10 +28,6 @@ public class InternalShopController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * Endpoint nội bộ để payment-service gọi callback khi thanh toán xong.
-     * (Trước đây nằm ở subscription-service, nay gộp vào đây)
-     */
     @PostMapping("/subscriptions/payment-result")
     public ResponseEntity<Void> handlePaymentResult(@RequestBody PaymentResultRequest request) {
         subscriptionPurchaseService.handlePaymentResult(request);

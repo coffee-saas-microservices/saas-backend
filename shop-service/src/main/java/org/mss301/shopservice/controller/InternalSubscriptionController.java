@@ -1,17 +1,14 @@
-package org.mss301.subscriptionservice.controller;
+package org.mss301.shopservice.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.mss301.subscriptionservice.dto.request.PaymentResultRequest;
-import org.mss301.subscriptionservice.service.SubscriptionPurchaseService;
+import org.mss301.shopservice.dto.request.PaymentResultRequest;
+import org.mss301.shopservice.service.SubscriptionPurchaseService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Endpoint nội bộ để payment-service gọi callback khi thanh toán xong.
- */
 @RestController
 @RequestMapping("/api/internal/subscriptions")
 @RequiredArgsConstructor
