@@ -43,6 +43,11 @@ spring:
           predicates:
             - Path=/api/payments/**, /v3/api-docs/payment
 
+        - id: catalog-service-route
+          uri: lb://catalog-service
+          predicates:
+            - Path=/api/catalog/**, /v3/api-docs/catalog
+
 eureka:
   instance:
     prefer-ip-address: true
@@ -66,3 +71,5 @@ springdoc:
         url: /v3/api-docs/subscription
       - name: 6. Payment Service
         url: /v3/api-docs/payment
+      - name: 7. Catalog Service
+        url: /v3/api-docs/catalog
