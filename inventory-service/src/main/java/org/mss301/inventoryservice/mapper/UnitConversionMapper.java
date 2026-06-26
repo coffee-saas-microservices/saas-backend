@@ -9,14 +9,14 @@ import org.mss301.inventoryservice.entity.UnitConversion;
 public interface UnitConversionMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "shop", ignore = true)
+    @Mapping(target = "shopId", ignore = true)
     @Mapping(target = "ingredient", ignore = true)
     @Mapping(target = "inventoryStatus", ignore = true)
     UnitConversion toEntity(UnitConversionRequest request);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "shop", ignore = true)
+    @Mapping(target = "shopId", ignore = true)
     @Mapping(target = "ingredient", ignore = true)
     void updateFromRequest(@MappingTarget UnitConversion entity, UnitConversionRequest request);
 

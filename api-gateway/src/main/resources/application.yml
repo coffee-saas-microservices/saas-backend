@@ -26,17 +26,12 @@ spring:
         - id: shop-service-route
           uri: lb://shop-service
           predicates:
-            - Path=/api/shops/**, /api/internal/shops/**, /v3/api-docs/shop
+            - Path=/api/shops/**, /api/internal/shops/**, /api/subscription-plan/**, /api/subscriptions/**, /v3/api-docs/shop
 
         - id: employee-service-route
           uri: lb://employee-service
           predicates:
             - Path=/api/employees/**, /api/shift-templates/**, /api/employee/unavailability/**, /api/schedules/**, /v3/api-docs/employee
-
-        - id: subscription-service-route
-          uri: lb://subscription-service
-          predicates:
-            - Path=/api/subscription-plan/**, /api/subscriptions/**, /v3/api-docs/subscription
 
         - id: payment-service-route
           uri: lb://payment-service
@@ -67,9 +62,7 @@ springdoc:
         url: /v3/api-docs/employee
       - name: 4. Inventory Service
         url: /v3/api-docs/inventory
-      - name: 5. Subscription Service
-        url: /v3/api-docs/subscription
-      - name: 6. Payment Service
+      - name: 5. Payment Service
         url: /v3/api-docs/payment
-      - name: 7. Catalog Service
+      - name: 6. Catalog Service
         url: /v3/api-docs/catalog

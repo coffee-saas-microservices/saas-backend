@@ -18,7 +18,7 @@ public interface InventoryInvoiceMapper {
     InventoryInvoiceResponse toResponse(InventoryInvoice entity);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "shop", ignore = true)
+    @Mapping(target = "shopId", ignore = true)
     @Mapping(target = "totalAmount", ignore = true)
     @Mapping(target = "inventoryStatus", ignore = true)
     InventoryInvoice toEntity(InventoryInvoiceRequest request);

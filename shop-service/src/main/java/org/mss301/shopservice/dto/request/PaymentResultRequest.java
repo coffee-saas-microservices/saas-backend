@@ -5,10 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Payload payment-service callback về khi thanh toán xong.
- * referenceId = id của SubscriptionTransaction.
- */
 @Data
 @Builder
 @AllArgsConstructor

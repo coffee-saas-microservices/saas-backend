@@ -1,6 +1,5 @@
 package org.mss301.inventoryservice.service.impl;
 
-import com.thoughtworks.xstream.core.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.mss301.commonservice.exception.BusinessException;
 import org.mss301.commonservice.multitenancy.TenantContext;
@@ -28,12 +27,13 @@ public class UnitConversionServiceImpl implements UnitConversionService {
     @Transactional
     public UnitConversionResponse create(UnitConversionRequest request) {
         Long shopId = TenantContext.getCurrentShopId();
-        Long shopAdminId = SecurityUtils.getCurrentUserId();
+
         var ingredient = ingredientRepository
                 .findByIdAndShopId(request.getIngredientId(), shopId)
                 .orElseThrow(() -> new BusinessException("Nguyên liệu không tồn tại"));
 
-        if (unitConversionRepository.existsByIngredientIdAndFromUnitAndInventoryStatus(ingredient.getId(), request.getFromUnit(),
+        if (unitConversionRepository.existsByIngredientIdAndFromUnitAndInventoryStatus(ingredient.getId(),
+                request.getFromUnit(),
                 InventoryStatus.ACTIVE)) {
             throw new BusinessException("Đơn vị " + request.getFromUnit() + " đã được cấu hình cho nguyên liệu này");
         }
@@ -51,8 +51,6 @@ public class UnitConversionServiceImpl implements UnitConversionService {
     @Override
     @Transactional
     public UnitConversion update(Long id, UnitConversionRequest request) {
-
-        Long shopAdminId = SecurityUtils.getCurrentUserId();
 
         UnitConversion entity = unitConversionRepository.findByIdAndShopId(id, TenantContext.getCurrentShopId())
                 .orElseThrow(() -> new BusinessException("Cấu hình quy đổi không tồn tại"));

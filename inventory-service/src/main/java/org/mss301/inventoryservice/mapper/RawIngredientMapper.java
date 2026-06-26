@@ -12,7 +12,7 @@ public interface RawIngredientMapper {
     RawIngredientResponse toResponse(RawIngredient entity);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "shop", ignore = true)
+    @Mapping(target = "shopId", ignore = true)
     @Mapping(target = "inventoryStatus", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
@@ -20,6 +20,6 @@ public interface RawIngredientMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "shop", ignore = true)
+    @Mapping(target = "shopId", ignore = true)
     void updateFromRequest(@MappingTarget RawIngredient entity, RawIngredientRequest request);
 }
