@@ -16,7 +16,7 @@ spring:
         - id: inventory-service-route
           uri: lb://inventory-service
           predicates:
-            - Path=/api/**, /v3/api-docs/inventory
+            - Path=/api/inventory/**, /v3/api-docs/inventory
 
         - id: identity-service-route
           uri: lb://identity-service
@@ -26,7 +26,7 @@ spring:
         - id: shop-service-route
           uri: lb://shop-service
           predicates:
-            - Path=/api/shops/**, /api/internal/shops/**, /api/subscription-plan/**, /api/subscriptions/**, /v3/api-docs/shop
+            - Path=/api/shops/**, /api/internal/shops/**, /api/subscription-plans/**, /api/subscriptions/**, /v3/api-docs/shop
 
         - id: employee-service-route
           uri: lb://employee-service

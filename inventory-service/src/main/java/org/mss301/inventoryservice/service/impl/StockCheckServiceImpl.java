@@ -1,7 +1,9 @@
 package org.mss301.inventoryservice.service.impl;
 
-import com.thoughtworks.xstream.core.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.mss301.inventoryservice.client.IdentityServiceClient;
+import org.mss301.inventoryservice.config.SecurityUtils;
 import org.mss301.commonservice.exception.BusinessException;
 import org.mss301.commonservice.multitenancy.TenantContext;
 import org.mss301.inventoryservice.dto.filter.StockCheckSessionFilter;
@@ -26,6 +28,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StockCheckServiceImpl implements StockCheckService {
 
     private final StockCheckSessionRepository sessionRepository;
@@ -34,18 +37,28 @@ public class StockCheckServiceImpl implements StockCheckService {
     private final RawIngredientRepository ingredientRepository;
     private final StockCheckMapper stockCheckMapper;
     private final InventoryTransactionRepository inventoryTransactionRepository;
+    private final IdentityServiceClient identityServiceClient;
 
 
     @Override
     @Transactional
     public StockCheckSessionResponse startSession(StockCheckStartRequest request) {
         var shopId = TenantContext.getCurrentShopId();
-        //Long shopAdminId = SecurityUtils.getCurrentUserId();
+
+        String keycloakUserId = SecurityUtils.getCurrentKeycloakUserId();
+        if (keycloakUserId == null) {
+            throw new BusinessException("Người dùng chưa được xác thực");
+        }
+
+        var userResponse = identityServiceClient.getUserByKeycloakId(keycloakUserId, SecurityUtils.getCurrentDomain()).getBody();
+        if (userResponse == null || userResponse.getCustomerId() == null) {
+            throw new BusinessException("Không tìm thấy thông tin tài khoản người dùng");
+        }
 
         // 1. Tạo Session dùng Mapper
         StockCheckSession session = stockCheckMapper.toSessionEntity(request);
         session.setShopId(shopId);
-        session.setCreatedBy(null); // update after config
+        session.setCreatedBy(userResponse.getCustomerId());
         session.setInventoryStatus(InventoryStatus.ACTIVE);
         session.setCompletedAt(LocalDateTime.now()); // temporary, sẽ update sau khi approve
 
@@ -113,14 +126,22 @@ public class StockCheckServiceImpl implements StockCheckService {
     @Transactional
     public StockCheckSessionResponse approveSession(StockCheckApproveRequest request) {
 
-        //Long shopAdminId = SecurityUtils.getCurrentUserId();
-
         StockCheckSession session = sessionRepository.findByIdAndShopId(request.getSessionId(), TenantContext.getCurrentShopId())
                 .orElseThrow(() -> new BusinessException("Phiếu không tồn tại"));
 
         if (Boolean.TRUE.equals(request.getIsApproved())) {
             session.setIsApproved(true);
-            session.setApprovedBy(1L); // update after config
+
+            String keycloakUserId = SecurityUtils.getCurrentKeycloakUserId();
+            if (keycloakUserId != null) {
+                var userResponse = identityServiceClient.getUserByKeycloakId(keycloakUserId, SecurityUtils.getCurrentDomain()).getBody();
+                if (userResponse != null && userResponse.getCustomerId() != null) {
+                    session.setApprovedBy(userResponse.getCustomerId());
+                }
+            } else {
+                session.setApprovedBy(null);
+            }
+
             session.setCompletedAt(LocalDateTime.now());
             session.setNote(request.getNote());
             session.setInventoryStatus(InventoryStatus.ACTIVE);
@@ -211,6 +232,17 @@ public class StockCheckServiceImpl implements StockCheckService {
         var response = stockCheckMapper.toSessionResponse(session);
         // Map list details
         response.setDetails(stockCheckMapper.toDetailResponseList(detailRepository.findAllBySessionId(session.getId())));
+        if (session.getCreatedBy() != null) {
+            try {
+                var userResponse = identityServiceClient.getUserById(session.getCreatedBy(), SecurityUtils.getCurrentDomain()).getBody();
+                if (userResponse != null) {
+                    response.setCreatedByName(userResponse.getFullname());
+                }
+            } catch (Exception e) {
+                log.error("Lỗi khi lấy thông tin người tạo phiếu kiểm kho: {}", session.getCreatedBy(), e);
+                response.setCreatedByName("Unknown User");
+            }
+        }
         return response;
     }
 

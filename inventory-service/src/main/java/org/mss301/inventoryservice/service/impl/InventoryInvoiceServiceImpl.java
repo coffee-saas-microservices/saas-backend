@@ -1,7 +1,8 @@
 package org.mss301.inventoryservice.service.impl;
 
-import com.thoughtworks.xstream.core.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.mss301.inventoryservice.client.IdentityServiceClient;
+import org.mss301.inventoryservice.config.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.mss301.commonservice.exception.BusinessException;
 import org.mss301.commonservice.multitenancy.TenantContext;
@@ -38,6 +39,7 @@ public class InventoryInvoiceServiceImpl implements InventoryInvoiceService {
     private final RawIngredientRepository ingredientRepository;
 
     private final UnitConversionService conversionService;
+    private final IdentityServiceClient identityServiceClient;
 
     private final InventoryInvoiceMapper invoiceMapper;
     private final InvoiceItemMapper itemMapper;
@@ -46,12 +48,21 @@ public class InventoryInvoiceServiceImpl implements InventoryInvoiceService {
     @Transactional
     public InventoryInvoiceResponse importStock(InventoryInvoiceRequest request) {
         long shopId = TenantContext.getCurrentShopId();
-        //Long shopAdminId = SecurityUtils.getCurrentUserId();
+
+        String keycloakUserId = SecurityUtils.getCurrentKeycloakUserId();
+        if (keycloakUserId == null) {
+            throw new BusinessException("Người dùng chưa được xác thực");
+        }
+
+        var userResponse = identityServiceClient.getUserByKeycloakId(keycloakUserId, SecurityUtils.getCurrentDomain()).getBody();
+        if (userResponse == null || userResponse.getCustomerId() == null) {
+            throw new BusinessException("Không tìm thấy thông tin tài khoản người dùng");
+        }
 
         // 1. Tạo Header Invoice dùng Mapper
         InventoryInvoice invoice = invoiceMapper.toEntity(request);
         invoice.setShopId(shopId);
-        //invoice.setCreatedBy(SecurityUtils.getCurrentUserId());
+        invoice.setCreatedBy(userResponse.getCustomerId());
         invoice.setInventoryStatus(InventoryStatus.ACTIVE);
         invoice.setTotalAmount(0.0);
 
@@ -120,23 +131,37 @@ public class InventoryInvoiceServiceImpl implements InventoryInvoiceService {
         invoice.setDetails(details);
         invoice = invoiceRepository.save(invoice);
 
-        var response = invoiceMapper.toResponse(invoice);
-
-        return response;
+        return toResponseWithCreatorName(invoice);
     }
 
     @Override
     public Page<InventoryInvoiceResponse> getAll(InventoryInvoiceFilter filter) {
         return invoiceRepository.findAll(
                 InventoryInvoiceSpec.filter(filter, TenantContext.getCurrentShopId()),
-                filter.toPageable()).map(invoiceMapper::toResponse);
+                filter.toPageable()).map(this::toResponseWithCreatorName);
     }
 
     @Override
     public InventoryInvoiceResponse getDetail(Long id) {
         return invoiceRepository.findByIdAndShopId(id, TenantContext.getCurrentShopId())
-                .map(invoiceMapper::toResponse)
+                .map(this::toResponseWithCreatorName)
                 .orElseThrow(() -> new BusinessException("Phiếu nhập không tồn tại"));
+    }
+
+    private InventoryInvoiceResponse toResponseWithCreatorName(InventoryInvoice invoice) {
+        var response = invoiceMapper.toResponse(invoice);
+        if (invoice.getCreatedBy() != null) {
+            try {
+                var userResponse = identityServiceClient.getUserById(invoice.getCreatedBy(), SecurityUtils.getCurrentDomain()).getBody();
+                if (userResponse != null) {
+                    response.setCreatedByName(userResponse.getFullname());
+                }
+            } catch (Exception e) {
+                log.error("Lỗi khi lấy thông tin người tạo phiếu nhập kho: {}", invoice.getCreatedBy(), e);
+                response.setCreatedByName("Unknown User");
+            }
+        }
+        return response;
     }
 
 //    @Override
