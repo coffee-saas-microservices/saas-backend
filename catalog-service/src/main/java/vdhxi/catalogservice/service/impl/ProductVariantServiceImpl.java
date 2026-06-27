@@ -3,7 +3,9 @@ package vdhxi.catalogservice.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vdhxi.catalogservice.common.multitenancy.TenantContext;
+import org.mss301.commonservice.multitenancy.TenantContext;
+import org.mss301.commonservice.exception.BusinessException;
+import org.springframework.util.StringUtils;
 import vdhxi.catalogservice.dto.request.ProductVariantRequest;
 import vdhxi.catalogservice.dto.response.ProductVariantResponse;
 import vdhxi.catalogservice.entity.Product;
@@ -30,9 +32,27 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
     @Transactional
     public ProductVariantResponse create(ProductVariantRequest request) {
+        if (request == null) {
+            throw new BusinessException("Yêu cầu không được để trống");
+        }
+        if (request.getProductId() == null) {
+            throw new BusinessException("Sản phẩm không được để trống");
+        }
+        if (request.getSizeId() == null) {
+            throw new BusinessException("Kích thước không được để trống");
+        }
+        if (request.getPrice() == null || request.getPrice() < 0) {
+            throw new BusinessException("Giá sản phẩm không hợp lệ");
+        }
+        if (!StringUtils.hasText(request.getCode())) {
+            throw new BusinessException("Mã phiên bản không được để trống");
+        }
+
         Long shopId = TenantContext.getCurrentShopId();
-        Product product = productRepository.findById(request.getProductId()).orElseThrow(() -> new RuntimeException("Product not found"));
-        Size size = sizeRepository.findById(request.getSizeId()).orElseThrow(() -> new RuntimeException("Size not found"));
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
+        Size size = sizeRepository.findById(request.getSizeId())
+                .orElseThrow(() -> new BusinessException("Không tìm thấy kích thước"));
 
         ProductVariant entity = new ProductVariant();
         entity.setShopId(shopId);
@@ -46,10 +66,16 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
     @Transactional
     public ProductVariantResponse update(Long id, ProductVariantRequest request) {
-        ProductVariant entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Variant not found"));
+        if (request == null) {
+            throw new BusinessException("Yêu cầu không được để trống");
+        }
+        if (request.getPrice() != null && request.getPrice() < 0) {
+            throw new BusinessException("Giá sản phẩm không hợp lệ");
+        }
+        ProductVariant entity = repository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy phiên bản sản phẩm"));
         
         if (request.getSizeId() != null && !request.getSizeId().equals(entity.getSize().getId())) {
-            Size size = sizeRepository.findById(request.getSizeId()).orElseThrow(() -> new RuntimeException("Size not found"));
+            Size size = sizeRepository.findById(request.getSizeId()).orElseThrow(() -> new BusinessException("Không tìm thấy kích thước"));
             entity.setSize(size);
         }
         
@@ -58,7 +84,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     }
 
     public ProductVariantResponse getById(Long id) {
-        return repository.findById(id).map(mapper::toResponse).orElseThrow(() -> new RuntimeException("Variant not found"));
+        return repository.findById(id).map(mapper::toResponse).orElseThrow(() -> new BusinessException("Không tìm thấy phiên bản sản phẩm"));
     }
 
     public List<ProductVariantResponse> getAllByProduct(Long productId) {
@@ -67,7 +93,7 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
     @Transactional
     public void delete(Long id) {
-        ProductVariant entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Variant not found"));
+        ProductVariant entity = repository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy phiên bản sản phẩm"));
         entity.setStatus(Status.DELETED);
         repository.save(entity);
     }

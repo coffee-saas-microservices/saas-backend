@@ -3,7 +3,9 @@ package vdhxi.catalogservice.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vdhxi.catalogservice.common.multitenancy.TenantContext;
+import org.mss301.commonservice.multitenancy.TenantContext;
+import org.mss301.commonservice.exception.BusinessException;
+import org.springframework.util.StringUtils;
 import vdhxi.catalogservice.dto.request.SizeRequest;
 import vdhxi.catalogservice.dto.response.SizeResponse;
 import vdhxi.catalogservice.entity.Size;
@@ -24,6 +26,9 @@ public class SizeServiceImpl implements SizeService {
 
     @Transactional
     public SizeResponse create(SizeRequest request) {
+        if (request == null || !StringUtils.hasText(request.getName())) {
+            throw new BusinessException("Tên kích thước không được để trống");
+        }
         Long shopId = TenantContext.getCurrentShopId();
         Size entity = new Size();
         entity.setShopId(shopId);
@@ -34,13 +39,16 @@ public class SizeServiceImpl implements SizeService {
 
     @Transactional
     public SizeResponse update(Long id, SizeRequest request) {
-        Size entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Size not found"));
+        if (request == null || !StringUtils.hasText(request.getName())) {
+            throw new BusinessException("Tên kích thước không được để trống");
+        }
+        Size entity = repository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy kích thước"));
         mapper.updateEntity(entity, request);
         return mapper.toResponse(repository.save(entity));
     }
 
     public SizeResponse getById(Long id) {
-        return repository.findById(id).map(mapper::toResponse).orElseThrow(() -> new RuntimeException("Size not found"));
+        return repository.findById(id).map(mapper::toResponse).orElseThrow(() -> new BusinessException("Không tìm thấy kích thước"));
     }
 
     public List<SizeResponse> getAll() {
@@ -50,7 +58,7 @@ public class SizeServiceImpl implements SizeService {
 
     @Transactional
     public void delete(Long id) {
-        Size entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Size not found"));
+        Size entity = repository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy kích thước"));
         entity.setStatus(Status.DELETED);
         repository.save(entity);
     }

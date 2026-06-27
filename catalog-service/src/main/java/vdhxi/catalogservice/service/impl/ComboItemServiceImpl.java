@@ -3,6 +3,8 @@ package vdhxi.catalogservice.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.mss301.commonservice.exception.BusinessException;
+import org.springframework.util.StringUtils;
 import vdhxi.catalogservice.dto.request.ComboItemRequest;
 import vdhxi.catalogservice.dto.response.ComboItemResponse;
 import vdhxi.catalogservice.entity.ComboItem;
@@ -32,12 +34,31 @@ public class ComboItemServiceImpl implements ComboItemService {
 
     @Transactional
     public ComboItemResponse create(ComboItemRequest request) {
-        Product product = productRepository.findById(request.getProductId()).orElseThrow(() -> new RuntimeException("Product not found"));
-        ProductVariant variant = variantRepository.findById(request.getProductVariantId()).orElseThrow(() -> new RuntimeException("Variant not found"));
+        if (request == null) {
+            throw new BusinessException("Yêu cầu không được để trống");
+        }
+        if (request.getProductId() == null) {
+            throw new BusinessException("Sản phẩm không được để trống");
+        }
+        if (request.getProductVariantId() == null) {
+            throw new BusinessException("Phiên bản sản phẩm không được để trống");
+        }
+        if (!StringUtils.hasText(request.getName())) {
+            throw new BusinessException("Tên món combo không được để trống");
+        }
+        if (request.getTotalPrice() == null || request.getTotalPrice() < 0) {
+            throw new BusinessException("Giá combo không hợp lệ");
+        }
+
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
+        ProductVariant variant = variantRepository.findById(request.getProductVariantId())
+                .orElseThrow(() -> new BusinessException("Không tìm thấy phiên bản sản phẩm"));
         
         Topping topping = null;
         if (request.getToppingId() != null) {
-            topping = toppingRepository.findById(request.getToppingId()).orElseThrow(() -> new RuntimeException("Topping not found"));
+            topping = toppingRepository.findById(request.getToppingId())
+                    .orElseThrow(() -> new BusinessException("Không tìm thấy topping"));
         }
 
         ComboItem entity = new ComboItem();
@@ -56,7 +77,7 @@ public class ComboItemServiceImpl implements ComboItemService {
 
     @Transactional
     public void delete(Long id) {
-        ComboItem entity = repository.findById(id).orElseThrow(() -> new RuntimeException("ComboItem not found"));
+        ComboItem entity = repository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy combo item"));
         entity.setStatus(Status.DELETED);
         repository.save(entity);
     }
