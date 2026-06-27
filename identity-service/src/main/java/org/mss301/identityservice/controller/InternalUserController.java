@@ -20,4 +20,10 @@ public class InternalUserController {
     public ResponseEntity<UserResponse> getUserById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
+
+    @GetMapping("/by-keycloak/{keycloakUserId}")
+    public ResponseEntity<UserResponse> getUserByKeycloakId(@PathVariable("keycloakUserId") String keycloakUserId) {
+        return ResponseEntity.ok(userService.getUserProfile(keycloakUserId));
+    }
 }
+
