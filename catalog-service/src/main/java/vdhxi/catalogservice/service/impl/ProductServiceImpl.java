@@ -3,7 +3,9 @@ package vdhxi.catalogservice.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vdhxi.catalogservice.common.multitenancy.TenantContext;
+import org.mss301.commonservice.multitenancy.TenantContext;
+import org.mss301.commonservice.exception.BusinessException;
+import org.springframework.util.StringUtils;
 import vdhxi.catalogservice.dto.request.ProductRequest;
 import vdhxi.catalogservice.dto.response.ProductResponse;
 import vdhxi.catalogservice.entity.Category;
@@ -35,9 +37,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     public ProductResponse create(ProductRequest request) {
+        if (request == null || !StringUtils.hasText(request.getName())) {
+            throw new BusinessException("Tên sản phẩm không được để trống");
+        }
+        if (request.getCategoryId() == null) {
+            throw new BusinessException("Danh mục không được để trống");
+        }
         Long shopId = TenantContext.getCurrentShopId();
         Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() -> new BusinessException("Không tìm thấy danh mục"));
 
         Product product = new Product();
         product.setShopId(shopId);
@@ -56,11 +64,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     public ProductResponse update(Long id, ProductRequest request) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+        if (request == null || !StringUtils.hasText(request.getName())) {
+            throw new BusinessException("Tên sản phẩm không được để trống");
+        }
+        Product product = productRepository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
         
         if (request.getCategoryId() != null && !request.getCategoryId().equals(product.getCategory().getId())) {
             Category category = categoryRepository.findById(request.getCategoryId())
-                    .orElseThrow(() -> new RuntimeException("Category not found"));
+                    .orElseThrow(() -> new BusinessException("Không tìm thấy danh mục"));
             product.setCategory(category);
         }
 
@@ -75,7 +86,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     public ProductResponse getById(Long id) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+        Product product = productRepository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
         ProductResponse response = productMapper.toResponse(product);
         
         List<ProductAllowedTopping> allowedToppings = allowedToppingRepository.findByProductId(id);
@@ -95,14 +106,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     public void delete(Long id) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+        Product product = productRepository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
         product.setStatus(Status.DELETED);
         productRepository.save(product);
     }
 
     @Transactional
     public void updateAllowToppings(Long productId, List<Long> toppingIds) {
-        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new BusinessException("Không tìm thấy sản phẩm"));
         
         List<ProductAllowedTopping> existing = allowedToppingRepository.findByProductId(productId);
         allowedToppingRepository.deleteAll(existing);

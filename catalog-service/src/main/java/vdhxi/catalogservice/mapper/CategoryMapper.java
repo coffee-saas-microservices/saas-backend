@@ -13,13 +13,11 @@ public class CategoryMapper {
         response.setId(entity.getId());
         response.setShopId(entity.getShopId());
         response.setName(entity.getName());
-        response.setCode(entity.getCode());
         response.setStatus(entity.getStatus());
         return response;
     }
 
     public void updateEntity(Category entity, CategoryRequest request) {
         if (request.getName() != null) entity.setName(request.getName());
-        if (request.getCode() != null) entity.setCode(request.getCode());
     }
 }

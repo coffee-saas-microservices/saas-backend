@@ -8,6 +8,5 @@ public class CategoryResponse {
     private Long id;
     private Long shopId;
     private String name;
-    private String code;
     private Status status;
 }

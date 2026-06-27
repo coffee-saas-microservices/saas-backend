@@ -3,7 +3,9 @@ package vdhxi.catalogservice.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vdhxi.catalogservice.common.multitenancy.TenantContext;
+import org.mss301.commonservice.multitenancy.TenantContext;
+import org.mss301.commonservice.exception.BusinessException;
+import org.springframework.util.StringUtils;
 import vdhxi.catalogservice.dto.request.CategoryRequest;
 import vdhxi.catalogservice.dto.response.CategoryResponse;
 import vdhxi.catalogservice.entity.Category;
@@ -24,6 +26,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional
     public CategoryResponse create(CategoryRequest request) {
+        if (request == null || !StringUtils.hasText(request.getName())) {
+            throw new BusinessException("Tên danh mục không được để trống");
+        }
         Long shopId = TenantContext.getCurrentShopId();
         Category entity = new Category();
         entity.setShopId(shopId);
@@ -34,13 +39,16 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional
     public CategoryResponse update(Long id, CategoryRequest request) {
-        Category entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Category not found"));
+        if (request == null || !StringUtils.hasText(request.getName())) {
+            throw new BusinessException("Tên danh mục không được để trống");
+        }
+        Category entity = repository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy danh mục"));
         mapper.updateEntity(entity, request);
         return mapper.toResponse(repository.save(entity));
     }
 
     public CategoryResponse getById(Long id) {
-        return repository.findById(id).map(mapper::toResponse).orElseThrow(() -> new RuntimeException("Category not found"));
+        return repository.findById(id).map(mapper::toResponse).orElseThrow(() -> new BusinessException("Không tìm thấy danh mục"));
     }
 
     public List<CategoryResponse> getAll() {
@@ -50,7 +58,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional
     public void delete(Long id) {
-        Category entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Category not found"));
+        Category entity = repository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy danh mục"));
         entity.setStatus(Status.DELETED);
         repository.save(entity);
     }

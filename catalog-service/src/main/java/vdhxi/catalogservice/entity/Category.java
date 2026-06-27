@@ -6,9 +6,7 @@ import vdhxi.catalogservice.common.entity.BaseEntity;
 import vdhxi.catalogservice.enums.Status;
 
 @Entity
-@Table(name = "categories", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"shop_id", "code"})
-})
+@Table(name = "categories")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,9 +23,6 @@ public class Category extends BaseEntity {
 
     @Column(name = "name", length = 50, nullable = false)
     private String name;
-
-    @Column(name = "code", length = 10, nullable = false)
-    private String code;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
