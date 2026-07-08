@@ -72,8 +72,11 @@ public class SubscriptionPlanServiceImpl implements SubscriptionPlanService {
         log.info("Đã vô hiệu hóa subscription plan: {}", plan.getSubscriptionPlanName());
     }
 
+    // Chỉ lấy gói đang ACTIVE -> gói đã xóa mềm (INACTIVE) coi như không tồn tại,
+    // giúp getById/update/delete nhất quán với getAll.
     private SubscriptionPlan findPlanOrThrow(Long id) {
-        return subscriptionPlanRepository.findById(id)
+        return subscriptionPlanRepository
+                .findBySubscriptionPlanIdAndSubscriptionPlanStatus(id, SubscriptionPlanStatus.ACTIVE)
                 .orElseThrow(() -> new BusinessException("Gói dịch vụ không tồn tại"));
     }
 }

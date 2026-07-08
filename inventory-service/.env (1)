@@ -1,0 +1,26 @@
+PORT=8086
+APPLICATION_NAME=inventory-service
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=inventory-service
+DB_USER=postgres
+DB_PASSWORD=12345678
+
+#KeyCloak Configuration
+REALM=inventory-service
+ISSUER_URI=http://localhost:8180/realms/inventory-service
+IDP_URL=http://localhost:8180
+CLIENT_ID=inventory-service-client
+CLIENT_SECRET=iD4lY3ICWnxV5QPaXvkjhzxmtMxvu1fS
+ADMIN_CLIENT_ID=admin-inventory-service-client
+ADMIN_CLIENT_SECRET=rPQ0DJKnbKUa3UTrw79YE84l1YSKZ6cw
+
+#Eureka Configuration (local dev: localhost, Docker: discovery-server)
+EUREKA_SERVER_URL=http://localhost:8761/eureka
+
+#SMTP Mail Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=hungtqse182075@fpt.edu.vn
+SMTP_PASSWORD=errgjmxzfbiwegka
+FRONTEND_URL=http://localhost:3000
