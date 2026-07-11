@@ -1,9 +1,12 @@
 package vdhxi.catalogservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import vdhxi.catalogservice.common.dto.response.ApiResponse;
+import vdhxi.catalogservice.common.dto.response.PageMeta;
+import vdhxi.catalogservice.dto.filter.ToppingFilter;
 import vdhxi.catalogservice.dto.request.ToppingRequest;
 import vdhxi.catalogservice.dto.response.ToppingResponse;
 import vdhxi.catalogservice.service.ToppingService;
@@ -32,8 +35,17 @@ public class ToppingController {
     }
 
     @GetMapping
-    public ApiResponse<List<ToppingResponse>> getAll() {
-        return ApiResponse.success(HttpStatus.OK, "Success", service.getAll(), null);
+    public ApiResponse<List<ToppingResponse>> getAll(@ModelAttribute ToppingFilter filter) {
+        Page<ToppingResponse> responses = service.getAll(filter);
+
+        PageMeta meta = PageMeta.builder()
+                .currentPage(responses.getNumber() + 1)
+                .size(responses.getSize())
+                .lastPage(responses.getTotalPages())
+                .totalElements(responses.getTotalElements())
+                .build();
+
+        return ApiResponse.success(HttpStatus.OK, "Get toppings successfully", responses.getContent(), meta);
     }
 
     @DeleteMapping("/{id}")
@@ -42,3 +54,4 @@ public class ToppingController {
         return ApiResponse.success(HttpStatus.OK, "Success", null, null);
     }
 }
+

@@ -1,9 +1,12 @@
 package vdhxi.catalogservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import vdhxi.catalogservice.common.dto.response.ApiResponse;
+import vdhxi.catalogservice.common.dto.response.PageMeta;
+import vdhxi.catalogservice.dto.filter.SizeFilter;
 import vdhxi.catalogservice.dto.request.SizeRequest;
 import vdhxi.catalogservice.dto.response.SizeResponse;
 import vdhxi.catalogservice.service.SizeService;
@@ -32,8 +35,17 @@ public class SizeController {
     }
 
     @GetMapping
-    public ApiResponse<List<SizeResponse>> getAll() {
-        return ApiResponse.success(HttpStatus.OK, "Success", service.getAll(), null);
+    public ApiResponse<List<SizeResponse>> getAll(@ModelAttribute SizeFilter filter) {
+        Page<SizeResponse> responses = service.getAll(filter);
+
+        PageMeta meta = PageMeta.builder()
+                .currentPage(responses.getNumber() + 1)
+                .size(responses.getSize())
+                .lastPage(responses.getTotalPages())
+                .totalElements(responses.getTotalElements())
+                .build();
+
+        return ApiResponse.success(HttpStatus.OK, "Get sizes successfully", responses.getContent(), meta);
     }
 
     @DeleteMapping("/{id}")
@@ -42,3 +54,4 @@ public class SizeController {
         return ApiResponse.success(HttpStatus.OK, "Success", null, null);
     }
 }
+

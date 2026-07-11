@@ -1,11 +1,13 @@
 package vdhxi.catalogservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.mss301.commonservice.multitenancy.TenantContext;
 import org.mss301.commonservice.exception.BusinessException;
 import org.springframework.util.StringUtils;
+import vdhxi.catalogservice.dto.filter.ProductVariantFilter;
 import vdhxi.catalogservice.dto.request.ProductVariantRequest;
 import vdhxi.catalogservice.dto.response.ProductVariantResponse;
 import vdhxi.catalogservice.entity.Product;
@@ -16,9 +18,6 @@ import vdhxi.catalogservice.mapper.ProductVariantMapper;
 import vdhxi.catalogservice.repository.ProductRepository;
 import vdhxi.catalogservice.repository.ProductVariantRepository;
 import vdhxi.catalogservice.repository.SizeRepository;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import vdhxi.catalogservice.service.ProductVariantService;
 
@@ -87,8 +86,10 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         return repository.findById(id).map(mapper::toResponse).orElseThrow(() -> new BusinessException("Không tìm thấy phiên bản sản phẩm"));
     }
 
-    public List<ProductVariantResponse> getAllByProduct(Long productId) {
-        return repository.findByProductId(productId).stream().map(mapper::toResponse).collect(Collectors.toList());
+    public Page<ProductVariantResponse> getAll(ProductVariantFilter filter) {
+        Long shopId = TenantContext.getCurrentShopId();
+        return repository.findByFilter(shopId, filter.getProductId(), filter.getSearch(), filter.toPageable())
+                .map(mapper::toResponse);
     }
 
     @Transactional
@@ -98,3 +99,4 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         repository.save(entity);
     }
 }
+

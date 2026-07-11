@@ -1,20 +1,19 @@
 package vdhxi.catalogservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.mss301.commonservice.multitenancy.TenantContext;
 import org.mss301.commonservice.exception.BusinessException;
 import org.springframework.util.StringUtils;
+import vdhxi.catalogservice.dto.filter.SizeFilter;
 import vdhxi.catalogservice.dto.request.SizeRequest;
 import vdhxi.catalogservice.dto.response.SizeResponse;
 import vdhxi.catalogservice.entity.Size;
 import vdhxi.catalogservice.enums.Status;
 import vdhxi.catalogservice.mapper.SizeMapper;
 import vdhxi.catalogservice.repository.SizeRepository;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import vdhxi.catalogservice.service.SizeService;
 
@@ -51,9 +50,10 @@ public class SizeServiceImpl implements SizeService {
         return repository.findById(id).map(mapper::toResponse).orElseThrow(() -> new BusinessException("Không tìm thấy kích thước"));
     }
 
-    public List<SizeResponse> getAll() {
+    public Page<SizeResponse> getAll(SizeFilter filter) {
         Long shopId = TenantContext.getCurrentShopId();
-        return repository.findByShopId(shopId).stream().map(mapper::toResponse).collect(Collectors.toList());
+        return repository.findByFilter(shopId, filter.getSearch(), filter.toPageable())
+                .map(mapper::toResponse);
     }
 
     @Transactional
@@ -63,3 +63,4 @@ public class SizeServiceImpl implements SizeService {
         repository.save(entity);
     }
 }
+
