@@ -16,7 +16,7 @@ public class InventoryTransactionSpec {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            predicates.add(cb.equal(root.get("shop").get("id"), shopId));
+            predicates.add(cb.equal(root.get("shopId"), shopId));
 
             if (filter.getIngredientId() != null) {
                 predicates.add(cb.equal(root.get("ingredient").get("id"), filter.getIngredientId()));

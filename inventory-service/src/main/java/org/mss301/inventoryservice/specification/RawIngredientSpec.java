@@ -15,7 +15,7 @@ public class RawIngredientSpec {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            predicates.add(cb.equal(root.get("shop").get("id"), shopId));
+            predicates.add(cb.equal(root.get("shopId"), shopId));
 
             if (StringUtils.hasText(filter.getKeyword())) {
                 String keyword = "%" + filter.getKeyword().toLowerCase() + "%";

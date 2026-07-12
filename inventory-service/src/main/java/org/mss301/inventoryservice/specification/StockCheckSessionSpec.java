@@ -15,7 +15,7 @@ public class StockCheckSessionSpec {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            predicates.add(cb.equal(root.get("shop").get("id"), shopId));
+            predicates.add(cb.equal(root.get("shopId"), shopId));
 
             if (StringUtils.hasText(filter.getCode())) {
                 predicates.add(cb.like(cb.lower(root.get("code")), "%" + filter.getCode().toLowerCase() + "%"));

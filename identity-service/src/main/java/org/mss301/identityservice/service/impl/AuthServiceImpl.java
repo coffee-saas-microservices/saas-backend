@@ -108,11 +108,11 @@ public class AuthServiceImpl implements AuthService {
         try {
             tokenResponse = keyCloakAuthClient.login(request.getUsername(), request.getPassword());
         } catch (Exception e) {
-            throw new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác");
+            throw new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác 1");
         }
 
         if (tokenResponse == null || tokenResponse.getAccessToken() == null) {
-            throw new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác");
+            throw new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác 2");
         }
 
         Map<String, Object> payload = decodeJwtPayload(tokenResponse.getAccessToken());
@@ -123,7 +123,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (roles.contains("CUSTOMER")) {
             User user = userRepository.findByKeycloakUserId(keycloakUserId)
-                    .orElseThrow(() -> new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác"));
+                    .orElseThrow(() -> new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác 3"));
 
             if (user.getShopId() == null || !user.getShopId().equals(currentShopId)) {
                 throw new BusinessException("Tài khoản không thuộc cửa hàng này");
@@ -134,7 +134,7 @@ public class AuthServiceImpl implements AuthService {
             }
         } else if (roles.contains("SHOP_ADMIN")) {
             User user = userRepository.findByKeycloakUserId(keycloakUserId)
-                    .orElseThrow(() -> new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác"));
+                    .orElseThrow(() -> new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác 4"));
 
             if (user.getShopId() == null || !user.getShopId().equals(currentShopId)) {
                 throw new BusinessException("Tài khoản không thuộc cửa hàng này");
@@ -145,7 +145,7 @@ public class AuthServiceImpl implements AuthService {
             }
         } else if (roles.contains("EMPLOYEE")) {
             User user = userRepository.findByKeycloakUserId(keycloakUserId)
-                    .orElseThrow(() -> new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác"));
+                    .orElseThrow(() -> new BusinessException("Tên đăng nhập hoặc mật khẩu không chính xác 5"));
 
             if (user.getShopId() == null || !user.getShopId().equals(currentShopId)) {
                 throw new BusinessException("Tài khoản không thuộc cửa hàng này");
