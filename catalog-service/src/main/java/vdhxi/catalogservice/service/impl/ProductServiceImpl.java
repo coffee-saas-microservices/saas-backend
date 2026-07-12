@@ -1,11 +1,13 @@
 package vdhxi.catalogservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.mss301.commonservice.multitenancy.TenantContext;
 import org.mss301.commonservice.exception.BusinessException;
 import org.springframework.util.StringUtils;
+import vdhxi.catalogservice.dto.filter.ProductFilter;
 import vdhxi.catalogservice.dto.request.ProductRequest;
 import vdhxi.catalogservice.dto.response.ProductResponse;
 import vdhxi.catalogservice.entity.Category;
@@ -97,11 +99,10 @@ public class ProductServiceImpl implements ProductService {
         return response;
     }
 
-    public List<ProductResponse> getAll() {
+    public Page<ProductResponse> getAll(ProductFilter filter) {
         Long shopId = TenantContext.getCurrentShopId();
-        return productRepository.findByShopId(shopId).stream()
-                .map(p -> getById(p.getId()))
-                .collect(Collectors.toList());
+        return productRepository.findByFilter(shopId, filter.getCategoryId(), filter.getSearch(), filter.toPageable())
+                .map(p -> getById(p.getId()));
     }
 
     @Transactional

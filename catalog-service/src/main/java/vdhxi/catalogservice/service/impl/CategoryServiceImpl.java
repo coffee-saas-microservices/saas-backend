@@ -1,20 +1,19 @@
 package vdhxi.catalogservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.mss301.commonservice.multitenancy.TenantContext;
 import org.mss301.commonservice.exception.BusinessException;
 import org.springframework.util.StringUtils;
+import vdhxi.catalogservice.dto.filter.CategoryFilter;
 import vdhxi.catalogservice.dto.request.CategoryRequest;
 import vdhxi.catalogservice.dto.response.CategoryResponse;
 import vdhxi.catalogservice.entity.Category;
 import vdhxi.catalogservice.enums.Status;
 import vdhxi.catalogservice.mapper.CategoryMapper;
 import vdhxi.catalogservice.repository.CategoryRepository;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import vdhxi.catalogservice.service.CategoryService;
 
@@ -51,9 +50,10 @@ public class CategoryServiceImpl implements CategoryService {
         return repository.findById(id).map(mapper::toResponse).orElseThrow(() -> new BusinessException("Không tìm thấy danh mục"));
     }
 
-    public List<CategoryResponse> getAll() {
+    public Page<CategoryResponse> getAll(CategoryFilter filter) {
         Long shopId = TenantContext.getCurrentShopId();
-        return repository.findByShopId(shopId).stream().map(mapper::toResponse).collect(Collectors.toList());
+        return repository.findByFilter(shopId, filter.getSearch(), filter.toPageable())
+                .map(mapper::toResponse);
     }
 
     @Transactional
@@ -63,3 +63,4 @@ public class CategoryServiceImpl implements CategoryService {
         repository.save(entity);
     }
 }
+

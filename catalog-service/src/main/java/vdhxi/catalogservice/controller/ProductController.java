@@ -1,9 +1,12 @@
 package vdhxi.catalogservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import vdhxi.catalogservice.common.dto.response.ApiResponse;
+import vdhxi.catalogservice.common.dto.response.PageMeta;
+import vdhxi.catalogservice.dto.filter.ProductFilter;
 import vdhxi.catalogservice.dto.request.ProductRequest;
 import vdhxi.catalogservice.dto.response.ProductResponse;
 import vdhxi.catalogservice.service.ProductService;
@@ -32,8 +35,17 @@ public class ProductController {
     }
 
     @GetMapping
-    public ApiResponse<List<ProductResponse>> getAll() {
-        return ApiResponse.success(HttpStatus.OK, "Success", service.getAll(), null);
+    public ApiResponse<List<ProductResponse>> getAll(@ModelAttribute ProductFilter filter) {
+        Page<ProductResponse> responses = service.getAll(filter);
+
+        PageMeta meta = PageMeta.builder()
+                .currentPage(responses.getNumber() + 1)
+                .size(responses.getSize())
+                .lastPage(responses.getTotalPages())
+                .totalElements(responses.getTotalElements())
+                .build();
+
+        return ApiResponse.success(HttpStatus.OK, "Get products successfully", responses.getContent(), meta);
     }
 
     @DeleteMapping("/{id}")
@@ -48,3 +60,4 @@ public class ProductController {
         return ApiResponse.success(HttpStatus.OK, "Success", null, null);
     }
 }
+
