@@ -4,15 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.mss301.commonservice.dto.event.enumeration.OrderStepStatus;
+import org.mss301.commonservice.dto.event.enumeration.PaymentGateway;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoryStatusEvent {
+public class PaymentUrlEvent {
     private Long orderId;
-    private Long shopId;
-    private OrderStepStatus status;
-    private String message;
+    private String payUrl;
+    private PaymentGateway gateway;
 }

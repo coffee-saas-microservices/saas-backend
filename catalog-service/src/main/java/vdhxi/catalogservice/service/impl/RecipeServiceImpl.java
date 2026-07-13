@@ -6,10 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.mss301.commonservice.multitenancy.TenantContext;
 import org.mss301.commonservice.exception.BusinessException;
 import vdhxi.catalogservice.dto.request.RecipeRequest;
+import vdhxi.catalogservice.dto.response.RecipeItemResponse;
 import vdhxi.catalogservice.dto.response.RecipeResponse;
 import vdhxi.catalogservice.entity.ProductVariant;
 import vdhxi.catalogservice.entity.Recipe;
 import vdhxi.catalogservice.entity.Topping;
+import vdhxi.catalogservice.enums.RecipeType;
 import vdhxi.catalogservice.enums.Status;
 import vdhxi.catalogservice.mapper.RecipeMapper;
 import vdhxi.catalogservice.repository.ProductVariantRepository;
@@ -80,5 +82,39 @@ public class RecipeServiceImpl implements RecipeService {
         Recipe entity = repository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy công thức"));
         entity.setStatus(Status.DELETED);
         repository.save(entity);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RecipeItemResponse> getRecipeItemsByVariantId(Long variantId) {
+        return repository.findByProductVariantId(variantId)
+                .stream()
+                .filter(recipe -> recipe.getStatus() == Status.ACTIVE)
+                .map(recipe -> RecipeItemResponse.builder()
+                        .recipeId(recipe.getId())
+                        .rawIngredientId(recipe.getRawIngredientId())
+                        .quantityRequired(recipe.getQuantityRequired() != null
+                                ? recipe.getQuantityRequired().doubleValue()
+                                : 0.0)
+                        .recipeType(RecipeType.VARIANT)
+                        .build())
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RecipeItemResponse> getRecipeItemsByToppingId(Long toppingId) {
+        return repository.findByToppingId(toppingId)
+                .stream()
+                .filter(recipe -> recipe.getStatus() == Status.ACTIVE)
+                .map(recipe -> RecipeItemResponse.builder()
+                        .recipeId(recipe.getId())
+                        .rawIngredientId(recipe.getRawIngredientId())
+                        .quantityRequired(recipe.getQuantityRequired() != null
+                        ? recipe.getQuantityRequired().doubleValue()
+                                : 0.0)
+                        .recipeType(RecipeType.TOPPING)
+                        .build())
+                .toList();
     }
 }

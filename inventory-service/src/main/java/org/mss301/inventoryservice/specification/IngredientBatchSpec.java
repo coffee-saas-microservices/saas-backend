@@ -20,7 +20,7 @@ public class IngredientBatchSpec {
 
             Join<IngredientBatch, RawIngredient> ingredientJoin = root.join("rawIngredient", JoinType.INNER);
 
-            predicates.add(cb.equal(root.get("shop").get("id"), shopId));
+            predicates.add(cb.equal(root.get("shopId"), shopId));
 
             if (filter.getIngredientId() != null) {
                 predicates.add(cb.equal(ingredientJoin.get("id"), filter.getIngredientId()));

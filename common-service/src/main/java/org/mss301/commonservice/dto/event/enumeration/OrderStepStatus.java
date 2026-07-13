@@ -1,7 +1,7 @@
 package org.mss301.commonservice.dto.event.enumeration;
 
-public enum OrderStatus {
+public enum OrderStepStatus {
     PENDING,
-    PAID,
+    SUCCESS,
     CANCELLED
 }

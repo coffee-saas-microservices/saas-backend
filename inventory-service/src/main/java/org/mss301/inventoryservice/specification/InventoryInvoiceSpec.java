@@ -20,7 +20,7 @@ public class InventoryInvoiceSpec {
 
             Join<InventoryInvoice, InventoryInvoiceDetail> detailJoin = root.join("details", JoinType.LEFT);
 
-            predicates.add(cb.equal(root.get("shop").get("id"), shopId));
+            predicates.add(cb.equal(root.get("shopId"), shopId));
 
             if (StringUtils.hasText(filter.getSearch())) {
                 String keyword = "%" + filter.getSearch().toLowerCase() + "%";

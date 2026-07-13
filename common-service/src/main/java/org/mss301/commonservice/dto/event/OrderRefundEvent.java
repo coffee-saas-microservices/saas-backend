@@ -4,15 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.mss301.commonservice.dto.event.enumeration.OrderStepStatus;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoryStatusEvent {
+public class OrderRefundEvent {
     private Long orderId;
+    private String orderCode;
     private Long shopId;
-    private OrderStepStatus status;
-    private String message;
+    private Long paidPrice;
+    private String reason;
 }

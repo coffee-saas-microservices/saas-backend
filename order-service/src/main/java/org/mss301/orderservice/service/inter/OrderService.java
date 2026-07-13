@@ -13,3 +13,4 @@ public interface OrderService {
     OrderResponse updateOrderStatus(Long id, OrderStatus status);
     Page<OrderResponse> getOrdersByCustomer(Long customerId, BaseFilter filter);
 }
+

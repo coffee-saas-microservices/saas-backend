@@ -11,7 +11,7 @@ import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGe
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@EnableFeignClients
+@EnableFeignClients(basePackages = "org.mss301.inventoryservice.client")
 @ComponentScan(
         basePackages = {
                 "org.mss301.inventoryservice",

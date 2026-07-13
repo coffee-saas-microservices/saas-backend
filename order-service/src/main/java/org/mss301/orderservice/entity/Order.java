@@ -55,6 +55,10 @@ public class Order {
     @Column(name = "invoice_url")
     String invoiceUrl;
 
+    @Transient
+    String payUrl;
+
+
     @Enumerated(EnumType.STRING)
     @Column(name = "order_type")
     OrderType orderType;

@@ -13,11 +13,13 @@ public class ToppingMapper {
         response.setId(entity.getId());
         response.setShopId(entity.getShopId());
         response.setName(entity.getName());
+        response.setPrice(entity.getPrice());
         response.setStatus(entity.getStatus());
         return response;
     }
 
     public void updateEntity(Topping entity, ToppingRequest request) {
         if (request.getName() != null) entity.setName(request.getName());
+        if (request.getPrice() != null) entity.setPrice(request.getPrice());
     }
 }

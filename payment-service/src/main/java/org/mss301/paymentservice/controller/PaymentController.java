@@ -3,6 +3,7 @@ package org.mss301.paymentservice.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.mss301.paymentservice.dto.request.CreatePaymentRequest;
+import org.mss301.paymentservice.dto.request.CreateOrderPaymentRequest;
 import org.mss301.paymentservice.dto.response.PaymentResponse;
 import org.mss301.paymentservice.service.PaymentService;
 import org.springframework.http.HttpStatus;
@@ -21,13 +22,16 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    /** Tạo đơn thanh toán, trả về payUrl (mock). */
     @PostMapping
     public ResponseEntity<PaymentResponse> create(@Valid @RequestBody CreatePaymentRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.createPayment(request));
     }
 
-    /** Giả lập người dùng trả tiền thành công. Có thể gọi bằng POST hoặc mở GET cho tiện test. */
+    @PostMapping("/order")
+    public ResponseEntity<PaymentResponse> createPaymentForOrder(@Valid @RequestBody CreateOrderPaymentRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(paymentService.createPaymentForOrder(request));
+    }
+
     @PostMapping("/{orderCode}/confirm")
     public ResponseEntity<PaymentResponse> confirm(@PathVariable String orderCode) {
         return ResponseEntity.ok(paymentService.confirmPayment(orderCode));

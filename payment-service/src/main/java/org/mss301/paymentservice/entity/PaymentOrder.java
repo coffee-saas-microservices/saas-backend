@@ -16,6 +16,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.mss301.paymentservice.entity.enumeration.PaymentStatus;
+import org.mss301.paymentservice.entity.enumeration.ReferenceType;
 
 import java.time.LocalDateTime;
 
@@ -41,12 +42,14 @@ public class PaymentOrder {
     @Column(name = "description")
     String description;
 
-    // Service nguồn + định danh bản ghi bên đó (vd "SUBSCRIPTION" + id của SubscriptionTransaction)
+    @Enumerated(EnumType.STRING)
     @Column(name = "reference_type")
-    String referenceType;
+    ReferenceType referenceType;
 
     @Column(name = "reference_id")
     String referenceId;
+    @Column(name = "order_id")
+    Long orderId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -57,6 +60,9 @@ public class PaymentOrder {
 
     @Column(name = "paid_at")
     LocalDateTime paidAt;
+
+    @Column(name = "pay_url", length = 1000)
+    String payUrl;
 
     @PrePersist
     public void onCreate() {

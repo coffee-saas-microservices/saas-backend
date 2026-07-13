@@ -38,6 +38,11 @@ spring:
           predicates:
             - Path=/api/payments/**, /v3/api-docs/payment
 
+        - id: order-service-route
+          uri: lb://order-service
+          predicates:
+            - Path=/api/orders/**, /api/promotions/**, /v3/api-docs/order
+
         - id: catalog-service-route
           uri: lb://catalog-service
           predicates:
@@ -66,3 +71,5 @@ springdoc:
         url: /v3/api-docs/payment
       - name: 6. Catalog Service
         url: /v3/api-docs/catalog
+      - name: 5. Order Service
+        url: /v3/api-docs/order
