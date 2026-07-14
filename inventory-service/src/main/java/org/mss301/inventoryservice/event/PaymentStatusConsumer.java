@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mss301.commonservice.dto.event.OrderCreatedEvent;
 import org.mss301.commonservice.dto.event.PaymentStatusEvent;
-import org.mss301.commonservice.dto.event.enumeration.OrderStepStatus;
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 import org.mss301.commonservice.exception.BusinessException;
 import org.mss301.inventoryservice.service.inter.StockDeductionService;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -66,7 +66,7 @@ public class PaymentStatusConsumer {
         log.info("[Kafka] Nhận 'payment.status': orderId={}, status={}",
                 event.getOrderId(), event.getStatus());
 
-        if (event.getStatus() != OrderStepStatus.SUCCESS) {
+        if (event.getStatus() != OrderStatus.SUCCESS) {
             log.info("[Kafka] Thanh toán FAILED/CANCELLED → không trừ kho cho orderId={}",
                     event.getOrderId());
             orderCache.remove(event.getOrderId()); // Cleanup cache
@@ -80,7 +80,7 @@ public class PaymentStatusConsumer {
             inventoryEventProducer.publishInventoryStatus(
                     event.getOrderId(),
                     event.getShopId(),
-                    OrderStepStatus.CANCELLED,
+                    OrderStatus.CANCELLED,
                     "Cache miss: inventory-service không tìm thấy thông tin order. " +
                             "Cần xem xét implement Redis cache."
             );
@@ -97,7 +97,7 @@ public class PaymentStatusConsumer {
             inventoryEventProducer.publishInventoryStatus(
                     event.getOrderId(),
                     orderEvent.getShopId(),
-                    OrderStepStatus.SUCCESS,
+                    OrderStatus.SUCCESS,
                     "Trừ kho thành công"
             );
         } catch (BusinessException e) {
@@ -105,7 +105,7 @@ public class PaymentStatusConsumer {
             inventoryEventProducer.publishInventoryStatus(
                     event.getOrderId(),
                     orderEvent.getShopId(),
-                    OrderStepStatus.CANCELLED,
+                    OrderStatus.CANCELLED,
                     "Không đủ nguyên liệu" + e.getMessage()
             );
         } finally {

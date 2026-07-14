@@ -2,8 +2,8 @@ package org.mss301.paymentservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 import org.mss301.commonservice.exception.BusinessException;
-import org.mss301.commonservice.dto.event.enumeration.OrderStepStatus;
 import org.mss301.paymentservice.client.SubscriptionCallbackClient;
 import org.mss301.paymentservice.config.OnepayProperties;
 import org.mss301.paymentservice.client.OnepayApiClient;
@@ -101,7 +101,7 @@ public class PaymentServiceImpl implements PaymentService {
                     saved.getOrderId(),
                     saved.getPaymentOrderId(),
                     null,
-                    OrderStepStatus.SUCCESS,
+                    OrderStatus.SUCCESS,
                     "Xác nhận thanh toán thủ công"
             );
         }
@@ -201,7 +201,7 @@ public class PaymentServiceImpl implements PaymentService {
                     orderId,
                     paymentOrder.getPaymentOrderId(),
                     null,
-                    OrderStepStatus.SUCCESS,
+                    OrderStatus.SUCCESS,
                     "Thanh toán OnePay thành công. Mã giao dịch: " + fields.get("vpc_TransactionNo")
             );
         } else {
@@ -213,7 +213,7 @@ public class PaymentServiceImpl implements PaymentService {
                     orderId,
                     paymentOrder.getPaymentOrderId(),
                     null,
-                    OrderStepStatus.CANCELLED,
+                    OrderStatus.CANCELLED,
                     "Thanh toán OnePay thất bại. ResponseCode: " + responseCode
             );
         }
@@ -266,7 +266,7 @@ public class PaymentServiceImpl implements PaymentService {
         } else if ("CASH".equals(gateway)) {
             paymentEventProducer.publishPaymentStatus(
                     request.getOrderId(), saved.getPaymentOrderId(), null,
-                    OrderStepStatus.SUCCESS,
+                    OrderStatus.SUCCESS,
                     "Thanh toán tiền mặt"
             );
         }

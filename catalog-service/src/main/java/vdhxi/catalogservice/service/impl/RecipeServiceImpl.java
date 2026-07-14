@@ -1,10 +1,12 @@
 package vdhxi.catalogservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.mss301.commonservice.multitenancy.TenantContext;
 import org.mss301.commonservice.exception.BusinessException;
+import vdhxi.catalogservice.dto.filter.RecipeFilter;
 import vdhxi.catalogservice.dto.request.RecipeRequest;
 import vdhxi.catalogservice.dto.response.RecipeItemResponse;
 import vdhxi.catalogservice.dto.response.RecipeResponse;
@@ -18,10 +20,10 @@ import vdhxi.catalogservice.repository.ProductVariantRepository;
 import vdhxi.catalogservice.repository.RecipeRepository;
 import vdhxi.catalogservice.repository.ToppingRepository;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 import vdhxi.catalogservice.service.RecipeService;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -53,13 +55,13 @@ public class RecipeServiceImpl implements RecipeService {
         Recipe entity = new Recipe();
         entity.setShopId(shopId);
         entity.setRawIngredientId(request.getRawIngredientId());
-        
+
         if (request.getProductVariantId() != null) {
             ProductVariant variant = variantRepository.findById(request.getProductVariantId())
                     .orElseThrow(() -> new BusinessException("Không tìm thấy phiên bản sản phẩm"));
             entity.setProductVariant(variant);
         }
-        
+
         if (request.getToppingId() != null) {
             Topping topping = toppingRepository.findById(request.getToppingId())
                     .orElseThrow(() -> new BusinessException("Không tìm thấy topping"));
@@ -73,8 +75,9 @@ public class RecipeServiceImpl implements RecipeService {
         return mapper.toResponse(repository.save(entity));
     }
 
-    public List<RecipeResponse> getByProductVariant(Long variantId) {
-        return repository.findByProductVariantId(variantId).stream().map(mapper::toResponse).collect(Collectors.toList());
+    public Page<RecipeResponse> getByProductVariant(RecipeFilter filter) {
+        return repository.findByProductVariantId(filter.getProductVariantId(), filter.toPageable())
+                .map(mapper::toResponse);
     }
 
     @Transactional
@@ -85,7 +88,6 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<RecipeItemResponse> getRecipeItemsByVariantId(Long variantId) {
         return repository.findByProductVariantId(variantId)
                 .stream()
@@ -102,7 +104,6 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<RecipeItemResponse> getRecipeItemsByToppingId(Long toppingId) {
         return repository.findByToppingId(toppingId)
                 .stream()
@@ -111,7 +112,7 @@ public class RecipeServiceImpl implements RecipeService {
                         .recipeId(recipe.getId())
                         .rawIngredientId(recipe.getRawIngredientId())
                         .quantityRequired(recipe.getQuantityRequired() != null
-                        ? recipe.getQuantityRequired().doubleValue()
+                                ? recipe.getQuantityRequired().doubleValue()
                                 : 0.0)
                         .recipeType(RecipeType.TOPPING)
                         .build())

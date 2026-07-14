@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.mss301.commonservice.dto.event.enumeration.OrderStepStatus;
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 
 @Data
 @Builder
@@ -13,6 +13,6 @@ import org.mss301.commonservice.dto.event.enumeration.OrderStepStatus;
 public class InventoryStatusEvent {
     private Long orderId;
     private Long shopId;
-    private OrderStepStatus status;
+    private OrderStatus status;
     private String message;
 }

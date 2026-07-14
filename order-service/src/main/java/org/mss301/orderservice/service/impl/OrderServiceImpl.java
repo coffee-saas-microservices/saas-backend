@@ -2,6 +2,7 @@ package org.mss301.orderservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 import org.mss301.commonservice.dto.request.BaseFilter;
 import org.mss301.commonservice.dto.response.ApiResponse;
 import org.mss301.commonservice.exception.BusinessException;
@@ -21,7 +22,6 @@ import org.mss301.orderservice.entity.PromotionUsage;
 import org.mss301.orderservice.entity.ToppingPerOrderItem;
 import org.mss301.orderservice.entity.enumeration.DiscountType;
 import org.mss301.orderservice.entity.enumeration.OrderItemStatus;
-import org.mss301.orderservice.entity.enumeration.OrderStatus;
 import org.mss301.orderservice.entity.enumeration.PromotionStatus;
 import org.mss301.orderservice.entity.enumeration.PromotionType;
 import org.mss301.orderservice.entity.enumeration.PromotionUsageStatus;

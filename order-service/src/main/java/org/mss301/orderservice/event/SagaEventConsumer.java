@@ -4,13 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mss301.commonservice.dto.event.InventoryStatusEvent;
 import org.mss301.commonservice.dto.event.PaymentStatusEvent;
-import org.mss301.commonservice.dto.event.enumeration.OrderStepStatus;
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 import org.mss301.commonservice.exception.BusinessException;
 import org.mss301.orderservice.client.IdentityServiceClient;
 import org.mss301.orderservice.entity.Order;
 import org.mss301.orderservice.entity.PointHistory;
 import org.mss301.orderservice.entity.enumeration.OrderItemStatus;
-import org.mss301.orderservice.entity.enumeration.OrderStatus;
 import org.mss301.orderservice.entity.enumeration.PointHistoryStatus;
 import org.mss301.orderservice.repository.OrderRepository;
 import org.mss301.orderservice.repository.PointHistoryRepository;
@@ -43,7 +42,7 @@ public class SagaEventConsumer {
                     return new BusinessException("Order không tồn tại: " + event.getOrderId());
                 });
 
-        if (event.getStatus() == OrderStepStatus.SUCCESS) {
+        if (event.getStatus() == OrderStatus.SUCCESS) {
             order.setStatus(OrderStatus.PROCESSING);
             orderRepository.save(order);
             log.info("Thanh toán OK → orderId={} chuyển sang PROCESSING, đang chờ inventory...", order.getOrderId());
@@ -67,7 +66,7 @@ public class SagaEventConsumer {
         Order order = orderRepository.findById(event.getOrderId())
                 .orElseThrow(() -> new BusinessException("Order không tồn tại: " + event.getOrderId()));
 
-        if (event.getStatus() == OrderStepStatus.SUCCESS) {
+        if (event.getStatus() == OrderStatus.SUCCESS) {
             order.setStatus(OrderStatus.PAID);
             order.getItems().forEach(item -> item.setStatus(OrderItemStatus.PAID));
             orderRepository.save(order);

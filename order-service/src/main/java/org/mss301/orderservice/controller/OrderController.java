@@ -8,7 +8,7 @@ import org.mss301.commonservice.dto.response.PageMeta;
 import org.mss301.commonservice.multitenancy.TenantContext;
 import org.mss301.orderservice.dto.request.OrderRequest;
 import org.mss301.orderservice.dto.response.OrderResponse;
-import org.mss301.orderservice.entity.enumeration.OrderStatus;
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 import org.mss301.orderservice.service.inter.OrderService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;

@@ -1,9 +1,12 @@
 package vdhxi.catalogservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import vdhxi.catalogservice.common.dto.response.ApiResponse;
+import vdhxi.catalogservice.common.dto.response.PageMeta;
+import vdhxi.catalogservice.dto.filter.RecipeFilter;
 import vdhxi.catalogservice.dto.request.RecipeRequest;
 import vdhxi.catalogservice.dto.response.RecipeResponse;
 import vdhxi.catalogservice.service.RecipeService;
@@ -21,9 +24,18 @@ public class RecipeController {
         return ApiResponse.success(HttpStatus.CREATED, "Success", service.create(request), null);
     }
 
-    @GetMapping("/variant/{variantId}")
-    public ApiResponse<List<RecipeResponse>> getByProductVariant(@PathVariable Long variantId) {
-        return ApiResponse.success(HttpStatus.OK, "Success", service.getByProductVariant(variantId), null);
+    @GetMapping
+    public ApiResponse<List<RecipeResponse>> getByProductVariant(@ModelAttribute RecipeFilter filter) {
+        Page<RecipeResponse> responses = service.getByProductVariant(filter);
+
+        PageMeta meta = PageMeta.builder()
+                .currentPage(responses.getNumber() + 1)
+                .size(responses.getSize())
+                .lastPage(responses.getTotalPages())
+                .totalElements(responses.getTotalElements())
+                .build();
+
+        return ApiResponse.success(HttpStatus.OK, "Get recipes successfully", responses.getContent(), meta);
     }
 
     @DeleteMapping("/{id}")
@@ -32,3 +44,4 @@ public class RecipeController {
         return ApiResponse.success(HttpStatus.OK, "Success", null, null);
     }
 }
+

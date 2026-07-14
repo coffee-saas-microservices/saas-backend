@@ -3,7 +3,7 @@ package org.mss301.paymentservice.event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mss301.commonservice.dto.event.OrderCreatedEvent;
-import org.mss301.commonservice.dto.event.enumeration.OrderStepStatus;
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 import org.mss301.commonservice.dto.event.enumeration.PaymentGateway;
 import org.mss301.paymentservice.client.OnepayApiClient;
 import org.mss301.paymentservice.entity.PaymentOrder;
@@ -69,7 +69,7 @@ public class OrderCreatedConsumer {
         } else if ("CASH".equals(gateway)) {
             paymentEventProducer.publishPaymentStatus(
                     event.getOrderId(), saved.getPaymentOrderId(), event.getShopId(),
-                    OrderStepStatus.SUCCESS,
+                    OrderStatus.SUCCESS,
                     "Thanh toán tiền mặt"
             );
         }
@@ -92,7 +92,7 @@ public class OrderCreatedConsumer {
             log.error("[OnePay] Tạo link thất bại cho orderId={}: {}", event.getOrderId(), e.getMessage());
             paymentEventProducer.publishPaymentStatus(
                     event.getOrderId(), paymentOrder.getPaymentOrderId(), event.getShopId(),
-                    OrderStepStatus.CANCELLED,
+                    OrderStatus.CANCELLED,
                     "Không thể tạo link thanh toán OnePay: " + e.getMessage()
             );
         }

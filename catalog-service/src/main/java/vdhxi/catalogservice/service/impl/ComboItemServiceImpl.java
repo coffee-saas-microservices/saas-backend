@@ -1,10 +1,12 @@
 package vdhxi.catalogservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.mss301.commonservice.exception.BusinessException;
 import org.springframework.util.StringUtils;
+import vdhxi.catalogservice.dto.filter.ComboItemFilter;
 import vdhxi.catalogservice.dto.request.ComboItemRequest;
 import vdhxi.catalogservice.dto.response.ComboItemResponse;
 import vdhxi.catalogservice.entity.ComboItem;
@@ -18,8 +20,6 @@ import vdhxi.catalogservice.repository.ProductRepository;
 import vdhxi.catalogservice.repository.ProductVariantRepository;
 import vdhxi.catalogservice.repository.ToppingRepository;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 import vdhxi.catalogservice.service.ComboItemService;
 
@@ -71,8 +71,9 @@ public class ComboItemServiceImpl implements ComboItemService {
         return mapper.toResponse(repository.save(entity));
     }
 
-    public List<ComboItemResponse> getByProductId(Long productId) {
-        return repository.findByProductId(productId).stream().map(mapper::toResponse).collect(Collectors.toList());
+    public Page<ComboItemResponse> getByProductId(ComboItemFilter filter) {
+        return repository.findByProductId(filter.getProductId(), filter.toPageable())
+                .map(mapper::toResponse);
     }
 
     @Transactional

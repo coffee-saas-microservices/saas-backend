@@ -3,7 +3,7 @@ package org.mss301.inventoryservice.event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mss301.commonservice.dto.event.InventoryStatusEvent;
-import org.mss301.commonservice.dto.event.enumeration.OrderStepStatus;
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +25,7 @@ public class InventoryEventProducer {
     private static final String TOPIC_INVENTORY_STATUS = "inventory.status";
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void publishInventoryStatus(Long orderId, Long shopId, OrderStepStatus status, String message) {
+    public void publishInventoryStatus(Long orderId, Long shopId, OrderStatus status, String message) {
         InventoryStatusEvent event = InventoryStatusEvent.builder()
                 .orderId(orderId)
                 .shopId(shopId)

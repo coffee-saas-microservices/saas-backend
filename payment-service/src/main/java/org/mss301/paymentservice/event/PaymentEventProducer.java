@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.mss301.commonservice.dto.event.PaymentStatusEvent;
 import org.mss301.commonservice.dto.event.PaymentUrlEvent;
-import org.mss301.commonservice.dto.event.enumeration.OrderStepStatus;
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 import org.mss301.commonservice.dto.event.enumeration.PaymentGateway;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,7 @@ public class PaymentEventProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void publishPaymentStatus(
-            Long orderId, Long transactionId, Long shopId, OrderStepStatus status, String message
+            Long orderId, Long transactionId, Long shopId, OrderStatus status, String message
     ) {
         PaymentStatusEvent event = PaymentStatusEvent.builder()
                 .orderId(orderId)
