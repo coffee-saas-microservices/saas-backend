@@ -1,6 +1,5 @@
-package vdhxi.catalogservice.client;
+package org.mss301.inventoryservice.client;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

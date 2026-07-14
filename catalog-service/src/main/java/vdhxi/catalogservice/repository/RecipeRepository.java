@@ -13,5 +13,6 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     List<Recipe> findByShopId(Long shopId);
     List<Recipe> findByProductVariantId(Long productVariantId);
     Page<Recipe> findByProductVariantId(@Param("productVariantId") Long productVariantId, Pageable pageable);
+    List<Recipe> findByToppingId(Long toppingId);
 }
 

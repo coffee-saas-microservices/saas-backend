@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.mss301.orderservice.entity.enumeration.OrderStatus;
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 import org.mss301.orderservice.entity.enumeration.OrderType;
 import org.mss301.commonservice.dto.event.enumeration.PaymentGateway;
 

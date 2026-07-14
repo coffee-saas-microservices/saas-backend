@@ -8,5 +8,6 @@ public class ToppingResponse {
     private Long id;
     private Long shopId;
     private String name;
+    private Long price;
     private Status status;
 }

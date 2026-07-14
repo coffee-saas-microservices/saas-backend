@@ -3,8 +3,7 @@ package org.mss301.orderservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.mss301.commonservice.dto.event.enumeration.OrderStepStatus;
-import org.mss301.orderservice.entity.enumeration.OrderStatus;
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 import org.mss301.orderservice.entity.enumeration.OrderType;
 import org.mss301.commonservice.dto.event.enumeration.PaymentGateway;
 import org.springframework.data.annotation.CreatedDate;
@@ -54,6 +53,10 @@ public class Order {
 
     @Column(name = "invoice_url")
     String invoiceUrl;
+
+    @Transient
+    String payUrl;
+
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_type")

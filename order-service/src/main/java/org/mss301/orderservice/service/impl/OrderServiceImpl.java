@@ -2,12 +2,14 @@ package org.mss301.orderservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 import org.mss301.commonservice.dto.request.BaseFilter;
 import org.mss301.commonservice.dto.response.ApiResponse;
 import org.mss301.commonservice.exception.BusinessException;
 import org.mss301.commonservice.multitenancy.TenantContext;
 import org.mss301.orderservice.client.CatalogServiceClient;
 import org.mss301.orderservice.client.PaymentServiceClient;
+import org.mss301.orderservice.dto.request.CreateOrderPaymentRequest;
 import org.mss301.orderservice.dto.request.OrderItemRequest;
 import org.mss301.orderservice.dto.request.OrderRequest;
 import org.mss301.orderservice.dto.request.ToppingItemRequest;
@@ -20,14 +22,11 @@ import org.mss301.orderservice.entity.PromotionUsage;
 import org.mss301.orderservice.entity.ToppingPerOrderItem;
 import org.mss301.orderservice.entity.enumeration.DiscountType;
 import org.mss301.orderservice.entity.enumeration.OrderItemStatus;
-import org.mss301.orderservice.entity.enumeration.OrderStatus;
 import org.mss301.orderservice.entity.enumeration.PromotionStatus;
 import org.mss301.orderservice.entity.enumeration.PromotionType;
 import org.mss301.orderservice.entity.enumeration.PromotionUsageStatus;
 import org.mss301.orderservice.entity.enumeration.ToppingPerOrderItemStatus;
-import org.mss301.commonservice.dto.event.enumeration.PaymentGateway;
 import org.mss301.orderservice.event.OrderEventProducer;
-import org.mss301.orderservice.event.PaymentUrlReplyService;
 import org.mss301.orderservice.mapper.OrderMapper;
 import org.mss301.orderservice.repository.OrderRepository;
 import org.mss301.orderservice.repository.PromotionRepository;
@@ -60,7 +59,6 @@ public class OrderServiceImpl implements OrderService {
     private final PromotionTargetRepository promotionTargetRepository;
     private final PaymentServiceClient paymentServiceClient;
     private final OrderMapper orderMapper;
-    private final PaymentUrlReplyService paymentUrlReplyService;
     private final TransactionTemplate transactionTemplate;
 
     @Override
@@ -264,17 +262,28 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
 
+            // 6.5. Gọi REST sang payment-service đồng bộ để tạo payment & payUrl (nếu lỗi sẽ rollback giao dịch)
+            try {
+                CreateOrderPaymentRequest paymentRequest = CreateOrderPaymentRequest.builder()
+                        .orderId(result.getOrderId())
+                        .orderCode(result.getCode())
+                        .amount(result.getPaidPrice() != null ? result.getPaidPrice() : result.getBasePrice())
+                        .paymentGateway(result.getPaymentGateway().name())
+                        .build();
+
+                Map<String, Object> paymentResponse = paymentServiceClient.createPaymentForOrder(paymentRequest);
+                if (paymentResponse != null && paymentResponse.get("payUrl") != null) {
+                    result.setPayUrl(paymentResponse.get("payUrl").toString());
+                }
+            } catch (Exception e) {
+                log.error("Lỗi khi tạo link thanh toán đồng bộ qua payment-service cho orderId: {}", result.getOrderId(), e);
+                throw new BusinessException("Không thể khởi tạo thanh toán: " + e.getMessage());
+            }
+
             return result;
         });
 
-        // 7. Đăng ký chờ payUrl TRƯỚC khi publish event (tránh race condition)
-        boolean needsPayUrl = savedOrder.getPaymentGateway() == PaymentGateway.VNPAY
-                || savedOrder.getPaymentGateway() == PaymentGateway.MOMO;
-        if (needsPayUrl) {
-            paymentUrlReplyService.registerWait(savedOrder.getOrderId());
-        }
-
-        // 8. Bắn event sang Kafka để các microservices khác xử lý (Payment & Inventory)
+        // 7. Publish event sang Kafka (fire & forget — không block chờ payUrl)
         try {
             orderEventProducer.publishOrderCreated(savedOrder);
         } catch (Exception e) {
@@ -282,16 +291,9 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException("Lỗi hệ thống khi khởi động luồng xử lý đơn hàng");
         }
 
-        // 9. Chờ payUrl từ payment-service (chỉ với gateway thanh toán online)
-        String payUrl = null;
-        if (needsPayUrl) {
-            payUrl = paymentUrlReplyService.waitForPayUrl(savedOrder.getOrderId(), 10);
-        }
-
-        OrderResponse response = mapWithPayUrl(savedOrder);
-        if (payUrl != null) {
-            response.setPayUrl(payUrl);
-        }
+        // 8. Trả về response ngay lập tức — payUrl sẽ được lấy qua GET /orders/{id}/pay-url
+        OrderResponse response = orderMapper.toResponse(savedOrder);
+        enrichOrderItems(response);
         return response;
     }
 
@@ -339,38 +341,51 @@ public class OrderServiceImpl implements OrderService {
             try {
                 Map<String, Object> paymentData = paymentServiceClient.getPaymentByOrderCode(order.getCode());
                 if (paymentData != null) {
-                    response.setPayUrl(toStringValue(paymentData.get("payUrl")));
+                    String payUrl = toStringValue(paymentData.get("payUrl"));
+                    // Chỉ set nếu là URL thật (tránh ghi đè bằng empty string)
+                    if (payUrl != null && !payUrl.isBlank()) {
+                        response.setPayUrl(payUrl);
+                    }
+                }
+            } catch (feign.FeignException e) {
+                if (e.status() == 400 || e.status() == 404) {
+                    log.debug("PaymentOrder chưa tồn tại cho orderCode={}", order.getCode());
+                } else {
+                    log.warn("Lỗi HTTP {} khi lấy thông tin thanh toán cho orderCode={}: {}", e.status(), order.getCode(), e.getMessage());
                 }
             } catch (Exception e) {
-                log.warn("Không tìm thấy thông tin thanh toán hoặc payment-service offline cho orderCode={}: {}",
-                        order.getCode(), e.getMessage());
+                log.warn("payment-service offline cho orderCode={}: {}", order.getCode(), e.getMessage());
             }
         }
         // Enrich productName & sizeName từ catalog-service theo productVariantId
-        if (response.getOrderItems() != null) {
-            response.getOrderItems().forEach(itemResponse -> {
-                try {
-                    ApiResponse<Map<String, Object>> variantResp =
-                            catalogServiceClient.getProductVariantById(itemResponse.getProductVariantId());
-                    if (variantResp != null && variantResp.getData() != null) {
-                        Map<String, Object> variantData = variantResp.getData();
-                        itemResponse.setSizeName(toStringValue(variantData.get("sizeName")));
-                        Long productId = toLong(variantData.get("productId"));
-                        if (productId != null) {
-                            ApiResponse<Map<String, Object>> productResp =
-                                    catalogServiceClient.getProductById(productId);
-                            if (productResp != null && productResp.getData() != null) {
-                                itemResponse.setProductName(toStringValue(productResp.getData().get("name")));
-                            }
+        enrichOrderItems(response);
+        return response;
+    }
+
+
+    private void enrichOrderItems(OrderResponse response) {
+        if (response.getOrderItems() == null) return;
+        response.getOrderItems().forEach(itemResponse -> {
+            try {
+                ApiResponse<Map<String, Object>> variantResp =
+                        catalogServiceClient.getProductVariantById(itemResponse.getProductVariantId());
+                if (variantResp != null && variantResp.getData() != null) {
+                    Map<String, Object> variantData = variantResp.getData();
+                    itemResponse.setSizeName(toStringValue(variantData.get("sizeName")));
+                    Long productId = toLong(variantData.get("productId"));
+                    if (productId != null) {
+                        ApiResponse<Map<String, Object>> productResp =
+                                catalogServiceClient.getProductById(productId);
+                        if (productResp != null && productResp.getData() != null) {
+                            itemResponse.setProductName(toStringValue(productResp.getData().get("name")));
                         }
                     }
-                } catch (Exception e) {
-                    log.warn("Không thể enrich thông tin sản phẩm cho variantId={}: {}",
-                            itemResponse.getProductVariantId(), e.getMessage());
                 }
-            });
-        }
-        return response;
+            } catch (Exception e) {
+                log.warn("Không thể enrich thông tin sản phẩm cho variantId={}: {}",
+                        itemResponse.getProductVariantId(), e.getMessage());
+            }
+        });
     }
 
     private Long toLong(Object val) {

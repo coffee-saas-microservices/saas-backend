@@ -19,7 +19,8 @@ public class BaseFilter {
     private List<String> sort;
 
     public Pageable toPageable() {
-        return PageRequest.of(page, pageSize, buildSort());
+        int pageIndex = page > 0 ? page - 1 : 0;
+        return PageRequest.of(pageIndex, pageSize, buildSort());
     }
 
     private Sort buildSort() {

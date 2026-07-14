@@ -1,9 +1,9 @@
 package org.mss301.orderservice.service.inter;
 
+import org.mss301.commonservice.dto.event.enumeration.OrderStatus;
 import org.mss301.commonservice.dto.request.BaseFilter;
 import org.mss301.orderservice.dto.request.OrderRequest;
 import org.mss301.orderservice.dto.response.OrderResponse;
-import org.mss301.orderservice.entity.enumeration.OrderStatus;
 import org.springframework.data.domain.Page;
 
 public interface OrderService {
@@ -13,3 +13,4 @@ public interface OrderService {
     OrderResponse updateOrderStatus(Long id, OrderStatus status);
     Page<OrderResponse> getOrdersByCustomer(Long customerId, BaseFilter filter);
 }
+

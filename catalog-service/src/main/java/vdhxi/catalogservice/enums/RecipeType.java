@@ -1,4 +1,6 @@
 package vdhxi.catalogservice.enums;
 
-public enum RecipeItemResponse {
+public enum RecipeType {
+    VARIANT,
+    TOPPING
 }

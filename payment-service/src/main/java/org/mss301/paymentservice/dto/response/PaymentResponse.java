@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.mss301.paymentservice.entity.enumeration.ReferenceType;
 
 @Data
 @Builder
@@ -15,7 +16,7 @@ public class PaymentResponse {
     private Long amount;
     private String description;
     private String status;
-    private String referenceType;
+    private ReferenceType referenceType;
     private String referenceId;
     // Link thanh toán giả lập — mở/POST vào link này để xác nhận đã trả tiền
     private String payUrl;

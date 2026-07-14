@@ -8,10 +8,12 @@ import org.mss301.commonservice.multitenancy.TenantContext;
 import org.mss301.commonservice.exception.BusinessException;
 import vdhxi.catalogservice.dto.filter.RecipeFilter;
 import vdhxi.catalogservice.dto.request.RecipeRequest;
+import vdhxi.catalogservice.dto.response.RecipeItemResponse;
 import vdhxi.catalogservice.dto.response.RecipeResponse;
 import vdhxi.catalogservice.entity.ProductVariant;
 import vdhxi.catalogservice.entity.Recipe;
 import vdhxi.catalogservice.entity.Topping;
+import vdhxi.catalogservice.enums.RecipeType;
 import vdhxi.catalogservice.enums.Status;
 import vdhxi.catalogservice.mapper.RecipeMapper;
 import vdhxi.catalogservice.repository.ProductVariantRepository;
@@ -20,6 +22,8 @@ import vdhxi.catalogservice.repository.ToppingRepository;
 
 
 import vdhxi.catalogservice.service.RecipeService;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -51,13 +55,13 @@ public class RecipeServiceImpl implements RecipeService {
         Recipe entity = new Recipe();
         entity.setShopId(shopId);
         entity.setRawIngredientId(request.getRawIngredientId());
-        
+
         if (request.getProductVariantId() != null) {
             ProductVariant variant = variantRepository.findById(request.getProductVariantId())
                     .orElseThrow(() -> new BusinessException("Không tìm thấy phiên bản sản phẩm"));
             entity.setProductVariant(variant);
         }
-        
+
         if (request.getToppingId() != null) {
             Topping topping = toppingRepository.findById(request.getToppingId())
                     .orElseThrow(() -> new BusinessException("Không tìm thấy topping"));
@@ -81,5 +85,37 @@ public class RecipeServiceImpl implements RecipeService {
         Recipe entity = repository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy công thức"));
         entity.setStatus(Status.DELETED);
         repository.save(entity);
+    }
+
+    @Override
+    public List<RecipeItemResponse> getRecipeItemsByVariantId(Long variantId) {
+        return repository.findByProductVariantId(variantId)
+                .stream()
+                .filter(recipe -> recipe.getStatus() == Status.ACTIVE)
+                .map(recipe -> RecipeItemResponse.builder()
+                        .recipeId(recipe.getId())
+                        .rawIngredientId(recipe.getRawIngredientId())
+                        .quantityRequired(recipe.getQuantityRequired() != null
+                                ? recipe.getQuantityRequired().doubleValue()
+                                : 0.0)
+                        .recipeType(RecipeType.VARIANT)
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public List<RecipeItemResponse> getRecipeItemsByToppingId(Long toppingId) {
+        return repository.findByToppingId(toppingId)
+                .stream()
+                .filter(recipe -> recipe.getStatus() == Status.ACTIVE)
+                .map(recipe -> RecipeItemResponse.builder()
+                        .recipeId(recipe.getId())
+                        .rawIngredientId(recipe.getRawIngredientId())
+                        .quantityRequired(recipe.getQuantityRequired() != null
+                                ? recipe.getQuantityRequired().doubleValue()
+                                : 0.0)
+                        .recipeType(RecipeType.TOPPING)
+                        .build())
+                .toList();
     }
 }

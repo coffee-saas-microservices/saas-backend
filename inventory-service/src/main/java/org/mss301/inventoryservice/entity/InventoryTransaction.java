@@ -19,10 +19,10 @@ import java.time.LocalDateTime;
         @Index(name = "idx_inv_trans_shop_type_date", columnList = "shop_id, transaction_type, created_at"),
         @Index(name = "idx_inv_trans_created_at", columnList = "created_at")
 })
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class InventoryTransaction {
     @Id

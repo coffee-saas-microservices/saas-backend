@@ -24,6 +24,9 @@ public class Topping extends BaseEntity {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
+    @Column(name = "price")
+    private Long price;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status;

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.mss301.paymentservice.entity.enumeration.ReferenceType;
 
 @Data
 @Builder
@@ -14,10 +15,7 @@ public class CreatePaymentRequest {
 
     @NotNull(message = "Số tiền không được để trống")
     private Long amount;
-
     private String description;
-
-    // Service nguồn gọi sang (vd "SUBSCRIPTION") + id bản ghi bên đó để callback
-    private String referenceType;
+    private ReferenceType referenceType;
     private String referenceId;
 }

@@ -20,7 +20,7 @@ public interface OrderMapper {
     @Mapping(target = "orderItems", source = "items")
     @Mapping(target = "productQuantity",
              expression = "java(order.getProductQuantity() != null ? order.getProductQuantity() : 0)")
-    @Mapping(target = "payUrl", ignore = true)
+    @Mapping(target = "payUrl", source = "payUrl")
     OrderResponse toResponse(Order order);
 
     @Mapping(target = "orderItemStatus", source = "status")
@@ -48,6 +48,7 @@ public interface OrderMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "items", ignore = true)
+    @Mapping(target = "payUrl", ignore = true)
     Order toEntity(OrderRequest request);
 
     @Mapping(target = "orderItemId", ignore = true)
