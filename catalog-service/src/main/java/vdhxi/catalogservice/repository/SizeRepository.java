@@ -14,7 +14,7 @@ public interface SizeRepository extends JpaRepository<Size, Long> {
     List<Size> findByShopId(Long shopId);
 
     @Query("SELECT s FROM Size s WHERE s.shopId = :shopId " +
-           "AND (:search IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "AND (CAST(:search AS string) IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')))")
     Page<Size> findByFilter(@Param("shopId") Long shopId,
                             @Param("search") String search,
                             Pageable pageable);

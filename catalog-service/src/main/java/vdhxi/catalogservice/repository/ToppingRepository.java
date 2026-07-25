@@ -14,7 +14,7 @@ public interface ToppingRepository extends JpaRepository<Topping, Long> {
     List<Topping> findByShopId(Long shopId);
 
     @Query("SELECT t FROM Topping t WHERE t.shopId = :shopId " +
-           "AND (:search IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "AND (CAST(:search AS string) IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')))")
     Page<Topping> findByFilter(@Param("shopId") Long shopId,
                                @Param("search") String search,
                                Pageable pageable);

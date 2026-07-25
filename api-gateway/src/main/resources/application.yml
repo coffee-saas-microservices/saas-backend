@@ -46,7 +46,7 @@ spring:
         - id: catalog-service-route
           uri: lb://catalog-service
           predicates:
-            - Path=/api/categories/**,/api/combo-items/**, /api/product-variants/**, /api/sizes/**,/api/recipes/**, /api/products/**, /api/toppings/**, /v3/api-docs/catalog
+            - Path=/api/categories/**,/api/combo-items/**, /api/product-variants/**, /api/sizes/**,/api/recipes/**, /api/products/**, /api/toppings/**, /api/public/menu/**, /v3/api-docs/catalog
 
 eureka:
   instance:

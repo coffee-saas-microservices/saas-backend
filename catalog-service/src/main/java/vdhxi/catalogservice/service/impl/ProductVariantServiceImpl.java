@@ -46,6 +46,9 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         if (!StringUtils.hasText(request.getCode())) {
             throw new BusinessException("Mã phiên bản không được để trống");
         }
+        if (repository.existsByCode(request.getCode())) {
+            throw new BusinessException("Mã phiên bản đã tồn tại");
+        }
 
         Long shopId = TenantContext.getCurrentShopId();
         Product product = productRepository.findById(request.getProductId())
@@ -70,6 +73,9 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         }
         if (request.getPrice() != null && request.getPrice() < 0) {
             throw new BusinessException("Giá sản phẩm không hợp lệ");
+        }
+        if (StringUtils.hasText(request.getCode()) && repository.existsByCodeAndIdNot(request.getCode(), id)) {
+            throw new BusinessException("Mã phiên bản đã tồn tại");
         }
         ProductVariant entity = repository.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy phiên bản sản phẩm"));
         
