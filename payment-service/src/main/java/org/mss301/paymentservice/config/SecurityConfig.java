@@ -23,7 +23,8 @@ public class SecurityConfig {
             "/v3/api-docs.yaml",
             "/api/internal/**",
             "/api/payments/**",
-            "/onepay/**"
+            "/onepay/**",
+            "/api/onepay/**"
     };
 
     @Bean

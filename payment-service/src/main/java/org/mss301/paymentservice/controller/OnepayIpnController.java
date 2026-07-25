@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping({"/onepay", "/api/payments/onepay"})
+@RequestMapping({"/api/onepay", "/api/payments/onepay"})
 @RequiredArgsConstructor
 @Slf4j
 public class OnepayIpnController {
