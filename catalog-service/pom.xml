@@ -75,6 +75,11 @@
             <version>3.0.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
         <!-- Common Service (shared utilities) -->
         <dependency>
             <groupId>org.mss301</groupId>

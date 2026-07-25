@@ -7,14 +7,17 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vdhxi.catalogservice.entity.Category;
+import vdhxi.catalogservice.enums.Status;
 import java.util.List;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Category> findByShopId(Long shopId);
 
+    List<Category> findByShopIdAndStatus(Long shopId, Status status);
+
     @Query("SELECT c FROM Category c WHERE c.shopId = :shopId " +
-           "AND (:search IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "AND (CAST(:search AS string) IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')))")
     Page<Category> findByFilter(@Param("shopId") Long shopId,
                                 @Param("search") String search,
                                 Pageable pageable);
